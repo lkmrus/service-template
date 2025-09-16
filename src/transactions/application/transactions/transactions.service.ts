@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Transaction } from '../../domain/entities/transaction.entity';
-import { TransactionStatus, PaymentMethod } from '../../domain/enums/transaction.enums';
+import {
+  TransactionStatus,
+  PaymentMethod,
+} from '../../domain/enums/transaction.enums';
 
 @Injectable()
 export class TransactionsService {
@@ -23,7 +26,11 @@ export class TransactionsService {
     externalId?: string;
   }): Promise<Transaction> {
     // 1. Create the transaction
-    const transaction = { ...data, amountIn: data.amountIn || 0, amountOut: data.amountOut || 0 } as Transaction;
+    const transaction = {
+      ...data,
+      amountIn: data.amountIn || 0,
+      amountOut: data.amountOut || 0,
+    } as Transaction;
     // const createdTransaction = await this.transactionRepository.create(transaction);
 
     // 2. Update the user's balance atomically
@@ -51,7 +58,10 @@ export class TransactionsService {
    * @param transaction - The updated transaction data.
    * @returns The updated transaction.
    */
-  async update(id: string, transaction: Partial<Transaction>): Promise<Transaction> {
+  async update(
+    id: string,
+    transaction: Partial<Transaction>,
+  ): Promise<Transaction> {
     return transaction as Transaction;
   }
 }

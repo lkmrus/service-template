@@ -15,10 +15,7 @@ export class OrderService {
    * @param transactionId - The ID of the related transaction.
    * @returns The created order.
    */
-  createOrderFromPreOrder(
-    preOrder: PreOrder,
-    transactionId: string,
-  ): Order {
+  createOrderFromPreOrder(preOrder: PreOrder, transactionId: string): Order {
     const order = {
       ...preOrder,
       preOrderId: preOrder.id,

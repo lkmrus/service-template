@@ -16,8 +16,14 @@ export class BillingController {
    * @returns The result of the use case execution.
    */
   @Post('subscriptions')
-  createSubscription(@Body() body: { userId: string, planId: string, preOrderId: string }) {
-    return this.createSubscriptionUseCase.execute(body.userId, body.planId, body.preOrderId);
+  createSubscription(
+    @Body() body: { userId: string; planId: string; preOrderId: string },
+  ) {
+    return this.createSubscriptionUseCase.execute(
+      body.userId,
+      body.planId,
+      body.preOrderId,
+    );
   }
 
   /**

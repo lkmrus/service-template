@@ -25,7 +25,9 @@ export class PreOrderService {
 
     const commissionConfig = commissions[preOrder.currency];
     if (!commissionConfig) {
-      throw new Error(`Commissions not configured for currency: ${preOrder.currency}`);
+      throw new Error(
+        `Commissions not configured for currency: ${preOrder.currency}`,
+      );
     }
 
     const fix = commissionConfig.fix;

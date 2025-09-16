@@ -1,8 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PAYMENT_GATEWAY_TOKEN, PaymentGateway } from '../../infrastructure/payment/payment-gateway.interface';
+import {
+  PAYMENT_GATEWAY_TOKEN,
+  PaymentGateway,
+} from '../../infrastructure/payment/payment-gateway.interface';
 import { TransactionsService } from '../../../transactions/application/transactions/transactions.service';
-import { TransactionStatus, PaymentMethod } from '../../../transactions/domain/enums/transaction.enums';
+import {
+  TransactionStatus,
+  PaymentMethod,
+} from '../../../transactions/domain/enums/transaction.enums';
 
 @Injectable()
 export class CreateSubscriptionUseCase {
@@ -23,7 +29,8 @@ export class CreateSubscriptionUseCase {
   async execute(userId: string, planId: string, preOrderId: string) {
     // For now, we'll assume the user exists and has a customerId
     const customerId = 'cus_123'; // a real implementation would fetch this from the db
-    const { subscriptionId, status } = await this.paymentGateway.createSubscription(customerId, planId);
+    const { subscriptionId, status } =
+      await this.paymentGateway.createSubscription(customerId, planId);
 
     // For now, we'll assume a full payment from balance
     // In a real implementation, we would get the plan amount and currency from the planId
