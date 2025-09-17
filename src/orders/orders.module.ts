@@ -10,6 +10,10 @@ import { PRE_ORDER_REPOSITORY } from './domain/repositories/pre-order.repository
 import { ORDER_REPOSITORY } from './domain/repositories/order.repository';
 import { PrismaPreOrderRepository } from './infrastructure/persistence/prisma-pre-order.repository';
 import { PrismaOrderRepository } from './infrastructure/persistence/prisma-order.repository';
+import { SupabasePreOrderRepository } from './infrastructure/persistence/supabase-pre-order.repository';
+import { SupabaseOrderRepository } from './infrastructure/persistence/supabase-order.repository';
+import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '../config/config';
 
 @Module({
   imports: [SuperAdminModule],
@@ -19,8 +23,42 @@ import { PrismaOrderRepository } from './infrastructure/persistence/prisma-order
     OrdersService,
     TransactionCompletedListener,
     OrderOwnerOrSuperAdminGuard,
-    { provide: PRE_ORDER_REPOSITORY, useClass: PrismaPreOrderRepository },
-    { provide: ORDER_REPOSITORY, useClass: PrismaOrderRepository },
+    PrismaPreOrderRepository,
+    PrismaOrderRepository,
+    SupabasePreOrderRepository,
+    SupabaseOrderRepository,
+    {
+      provide: PRE_ORDER_REPOSITORY,
+      useFactory: (
+        configService: ConfigService<AppConfig>,
+        prismaRepo: PrismaPreOrderRepository,
+        supabaseRepo: SupabasePreOrderRepository,
+      ) => {
+        const provider =
+          configService.get<'supabase' | 'prisma'>('dataProvider') ??
+          'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaPreOrderRepository,
+        SupabasePreOrderRepository,
+      ],
+    },
+    {
+      provide: ORDER_REPOSITORY,
+      useFactory: (
+        configService: ConfigService<AppConfig>,
+        prismaRepo: PrismaOrderRepository,
+        supabaseRepo: SupabaseOrderRepository,
+      ) => {
+        const provider =
+          configService.get<'supabase' | 'prisma'>('dataProvider') ??
+          'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [ConfigService, PrismaOrderRepository, SupabaseOrderRepository],
+    },
   ],
   controllers: [OrdersController],
   exports: [OrdersService],

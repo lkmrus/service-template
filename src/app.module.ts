@@ -11,13 +11,22 @@ import { ConfigModule } from '@nestjs/config';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { CommonMiddlewareModule } from './common/common-middleware.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SupabaseModule } from './supabase/supabase.module';
+import { appConfig, configValidationSchema } from './config/config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [appConfig],
+      validationSchema: configValidationSchema,
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: false,
+      },
     }),
     PrismaModule,
+    SupabaseModule,
     BillingModule,
     EventEmitterModule.forRoot(),
     TransactionsModule,

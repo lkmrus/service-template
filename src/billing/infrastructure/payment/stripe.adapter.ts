@@ -2,15 +2,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PaymentGateway } from './payment-gateway.interface';
+import { AppConfig } from '../../../config/config';
 
 @Injectable()
 export class StripeAdapter implements PaymentGateway {
   private readonly stripe: Stripe;
 
   constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
+    @Inject(ConfigService)
+    private readonly configService: ConfigService<AppConfig>,
   ) {
-    const apiKey = this.configService.get<string>('STRIPE_API_KEY');
+    const apiKey = this.configService.get<string>('stripeApiKey');
     if (!apiKey) {
       throw new Error('STRIPE_API_KEY is not configured');
     }

@@ -42,4 +42,14 @@ This document summarizes the current data model across the major modules and hig
 - Prisma migrations:
   - `20250917025125_init`: initial schema (users, orders, transactions, billing tables).
   - `20250917032704_align_names`: aligned table columns with domain naming (e.g., `planId`, `subscriptionId`).
+- Environment:
+  - `.env` now seeds `DATABASE_URL` with a Postgres connection string (`postgresql://postgres:postgres@localhost:5432/billing?schema=public`). Update it per environment before running `prisma migrate dev`.
+  - `STRIPE_API_KEY` placeholder left for gateway integration.
+  - `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` configure the default Supabase data provider. Set `DATA_PROVIDER=prisma` to route repositories back to Prisma; omit or set `supabase` to use Supabase.
+  - All configuration keys and validation live in `src/config/config.ts` (Joi schema + typed accessor). Extend this module when new settings are introduced.
+- Seeding & CI hooks:
+  - Run `npm run migrate:deploy` followed by `npm run db:seed` locally (or `npm run ci:db` in CI) to apply migrations and back-fill baseline plans/customers.
+  - Default seed creates two plans (`plan_basic_monthly`, `plan_premium_yearly`) and a bootstrap user/customer pair (`billing.admin@example.com`). Update `prisma/seed.ts` as business requirements evolve.
+- Supabase migrations:
+  - SQL files live under `supabase/migrations`. Apply them with the Supabase CLI (`supabase db reset --db-url <...> --file supabase/migrations/0001_init.sql`) or via the Supabase dashboard.
 - DTOs now mirror persisted attributes to avoid runtime drift between API contracts and storage schema.

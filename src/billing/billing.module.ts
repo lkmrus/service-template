@@ -18,6 +18,14 @@ import { PrismaSubscriptionRepository } from './infrastructure/persistence/prism
 import { PrismaInvoiceRepository } from './infrastructure/persistence/prisma-invoice.repository';
 import { PrismaPaymentRepository } from './infrastructure/persistence/prisma-payment.repository';
 import { PrismaBalanceRepository } from './infrastructure/persistence/prisma-balance.repository';
+import { SupabaseCustomerRepository } from './infrastructure/persistence/supabase-customer.repository';
+import { SupabasePlanRepository } from './infrastructure/persistence/supabase-plan.repository';
+import { SupabaseSubscriptionRepository } from './infrastructure/persistence/supabase-subscription.repository';
+import { SupabaseInvoiceRepository } from './infrastructure/persistence/supabase-invoice.repository';
+import { SupabasePaymentRepository } from './infrastructure/persistence/supabase-payment.repository';
+import { SupabaseBalanceRepository } from './infrastructure/persistence/supabase-balance.repository';
+import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '../config/config';
 
 @Module({
   imports: [TransactionsModule],
@@ -30,15 +38,116 @@ import { PrismaBalanceRepository } from './infrastructure/persistence/prisma-bal
     UserCreatedListener,
     CreateSubscriptionUseCase,
     CancelSubscriptionUseCase,
-    { provide: CUSTOMER_REPOSITORY, useClass: PrismaCustomerRepository },
-    { provide: PLAN_REPOSITORY, useClass: PrismaPlanRepository },
+    PrismaCustomerRepository,
+    SupabaseCustomerRepository,
+    PrismaPlanRepository,
+    SupabasePlanRepository,
+    PrismaSubscriptionRepository,
+    SupabaseSubscriptionRepository,
+    PrismaInvoiceRepository,
+    SupabaseInvoiceRepository,
+    PrismaPaymentRepository,
+    SupabasePaymentRepository,
+    PrismaBalanceRepository,
+    SupabaseBalanceRepository,
+    {
+      provide: CUSTOMER_REPOSITORY,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaCustomerRepository,
+        supabaseRepo: SupabaseCustomerRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaCustomerRepository,
+        SupabaseCustomerRepository,
+      ],
+    },
+    {
+      provide: PLAN_REPOSITORY,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaPlanRepository,
+        supabaseRepo: SupabasePlanRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [ConfigService, PrismaPlanRepository, SupabasePlanRepository],
+    },
     {
       provide: SUBSCRIPTION_REPOSITORY,
-      useClass: PrismaSubscriptionRepository,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaSubscriptionRepository,
+        supabaseRepo: SupabaseSubscriptionRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaSubscriptionRepository,
+        SupabaseSubscriptionRepository,
+      ],
     },
-    { provide: INVOICE_REPOSITORY, useClass: PrismaInvoiceRepository },
-    { provide: PAYMENT_REPOSITORY, useClass: PrismaPaymentRepository },
-    { provide: BALANCE_REPOSITORY, useClass: PrismaBalanceRepository },
+    {
+      provide: INVOICE_REPOSITORY,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaInvoiceRepository,
+        supabaseRepo: SupabaseInvoiceRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaInvoiceRepository,
+        SupabaseInvoiceRepository,
+      ],
+    },
+    {
+      provide: PAYMENT_REPOSITORY,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaPaymentRepository,
+        supabaseRepo: SupabasePaymentRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaPaymentRepository,
+        SupabasePaymentRepository,
+      ],
+    },
+    {
+      provide: BALANCE_REPOSITORY,
+      useFactory: (
+        config: ConfigService<AppConfig>,
+        prismaRepo: PrismaBalanceRepository,
+        supabaseRepo: SupabaseBalanceRepository,
+      ) => {
+        const provider =
+          config.get<'supabase' | 'prisma'>('dataProvider') ?? 'supabase';
+        return provider === 'prisma' ? prismaRepo : supabaseRepo;
+      },
+      inject: [
+        ConfigService,
+        PrismaBalanceRepository,
+        SupabaseBalanceRepository,
+      ],
+    },
   ],
 })
 export class BillingModule {}
