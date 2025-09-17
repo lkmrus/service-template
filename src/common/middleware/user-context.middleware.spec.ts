@@ -40,7 +40,11 @@ describe('UserContextMiddleware', () => {
   });
 
   it('should call next() if no access_token cookie is present', async () => {
-    await middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+    await middleware.use(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toBeUndefined();
   });
@@ -51,17 +55,27 @@ describe('UserContextMiddleware', () => {
       throw new Error('Invalid token');
     });
 
-    await middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+    await middleware.use(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toBeUndefined();
   });
 
   it('should call next() and not set req.user if user not found', async () => {
     mockRequest.cookies = { access_token: 'valid-token' };
-    jest.spyOn(jwtService, 'verify').mockReturnValue({ email: 'nonexistent@example.com' });
+    jest
+      .spyOn(jwtService, 'verify')
+      .mockReturnValue({ email: 'nonexistent@example.com' });
     jest.spyOn(usersService, 'findOne').mockResolvedValue(undefined);
 
-    await middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+    await middleware.use(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toBeUndefined();
   });
@@ -71,7 +85,11 @@ describe('UserContextMiddleware', () => {
     jest.spyOn(jwtService, 'verify').mockReturnValue({ email: mockUser.email });
     jest.spyOn(usersService, 'findOne').mockResolvedValue(mockUser);
 
-    await middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+    await middleware.use(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toEqual(mockUser);
   });

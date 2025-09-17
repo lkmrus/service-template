@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PreOrder } from '../domain/entities/pre-order.entity';
 
 @Injectable()
@@ -20,26 +20,36 @@ export class PreOrderService {
    * @returns The pre-order with the calculated total price and commissions.
    */
   async calculateTotalPrice(preOrder: PreOrder): Promise<PreOrder> {
-    const { commissions, quantity } = preOrder;
-    const productPrice = 100; // In a real implementation, we would get this from the product service
-
-    const commissionConfig = commissions[preOrder.currency];
-    if (!commissionConfig) {
-      throw new Error(
-        `Commissions not configured for currency: ${preOrder.currency}`,
+    const { currency, commissions, quantity = 0 } = preOrder;
+    if (!currency) {
+      throw new BadRequestException(
+        'currency must be provided for pre-order calculation',
       );
     }
 
-    const fix = commissionConfig.fix;
-    const percentageRate = commissionConfig.commisionRate;
+    if (!commissions) {
+      throw new BadRequestException(
+        'commission matrix must be provided for pre-order calculation',
+      );
+    }
+
+    const commissionConfig = commissions[currency];
+    if (!commissionConfig) {
+      throw new BadRequestException(
+        `commissions are not configured for currency: ${currency}`,
+      );
+    }
+
+    const { fix, commissionRate } = commissionConfig;
+    const productPrice = 100; // In a real implementation, we would get this from the product service
 
     const calculatedSum = productPrice * quantity;
-    const calculatedPercentage = (calculatedSum * percentageRate) / 100;
+    const percentageAmount = (calculatedSum * commissionRate) / 100;
 
     preOrder.calculatedCommissions = {
       fix,
-      percentageRate: calculatedPercentage,
-      total: fix + calculatedPercentage,
+      percentageAmount,
+      total: fix + percentageAmount,
     };
 
     preOrder.totalPrice = calculatedSum + preOrder.calculatedCommissions.total;

@@ -18,7 +18,7 @@ export class OrderOwnerOrSuperAdminGuard implements CanActivate {
       return false;
     }
 
-    if (this.superAdminService.isSuperAdmin(user.userId)) {
+    if (this.superAdminService.isSuperAdmin(user.id)) {
       return true;
     }
 
@@ -26,6 +26,6 @@ export class OrderOwnerOrSuperAdminGuard implements CanActivate {
     if (!order) {
       return false;
     }
-    return order.userId === user.userId;
+    return order.userId === user.id;
   }
 }

@@ -10,7 +10,6 @@ import { PreOrderService } from '../../application/pre-order.service';
 import { OrdersService } from '../../application/orders/orders.service';
 import { PreOrder } from '../../domain/entities/pre-order.entity';
 import { Order } from '../../domain/entities/order.entity';
-import { OrderStatus } from '../../domain/enums/order.enums';
 import { AuthGuard } from '@nestjs/passport';
 import { OrderOwnerOrSuperAdminGuard } from './guards/order-owner-or-super-admin.guard';
 
@@ -38,9 +37,9 @@ export class OrdersController {
    * @returns The updated order.
    */
   @Patch(':id/complete')
+  @UseGuards(AuthGuard('jwt'), OrderOwnerOrSuperAdminGuard)
   async completeOrder(@Param('id') id: string): Promise<Order> {
-    // In a real implementation, we would update the order in the database
-    return { id, status: OrderStatus.COMPLETED } as Order;
+    return this.ordersService.completeOrder(id);
   }
 
   /**

@@ -1,8 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from '../../presentation/users/dto/update-user.dto';
+import {
+  USER_REPOSITORY,
+  UserRepository,
+} from '../../domain/repositories/user.repository';
+import { InMemoryUserRepository } from '../../infrastructure/persistence/in-memory-user.repository';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn((password: string) => `hashed_${password}`),
@@ -11,19 +16,23 @@ jest.mock('bcrypt', () => ({
 
 describe('UsersService', () => {
   let service: UsersService;
-  let usersStore: unknown[];
+  let repository: InMemoryUserRepository;
 
   beforeEach(async () => {
     jest.useFakeTimers();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
+      providers: [
+        UsersService,
+        { provide: USER_REPOSITORY, useClass: InMemoryUserRepository },
+      ],
     }).compile();
 
     service = module.get(UsersService);
-
-    usersStore = [];
-    (service as any).users = usersStore;
+    repository = module.get<UserRepository>(
+      USER_REPOSITORY,
+    ) as InMemoryUserRepository;
+    repository.clear();
 
     jest.setSystemTime(new Date('2025-01-01T00:00:00.000Z'));
   });
@@ -43,15 +52,28 @@ describe('UsersService', () => {
 
       expect(user).toEqual(
         expect.objectContaining({
-          id: '1',
+          id: expect.any(String),
           email: 'test@example.com',
           password: 'hashed_password',
         }),
       );
       expect(user.createdAt).toEqual(new Date('2025-01-01T00:00:00.000Z'));
       expect(user.updatedAt).toEqual(new Date('2025-01-01T00:00:00.000Z'));
-      expect(usersStore).toHaveLength(1);
       expect(bcrypt.hash).toHaveBeenCalledWith('password', 10);
+
+      const storedUser = await service.findOne(user.email);
+      expect(storedUser).toMatchObject({
+        id: user.id,
+        email: user.email,
+      });
+    });
+
+    it('throws if email already exists', async () => {
+      await service.create('test@example.com', 'password');
+
+      await expect(
+        service.create('test@example.com', 'password'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -91,7 +113,9 @@ describe('UsersService', () => {
     it('throws when user is missing', async () => {
       const dto: UpdateUserDto = { email: 'new@example.com' };
 
-      await expect(service.update('missing', dto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('missing', dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('updates the email', async () => {
@@ -104,7 +128,9 @@ describe('UsersService', () => {
       const updated = await service.update(created.id, dto);
 
       expect(updated.email).toBe('new@example.com');
-      expect(updated.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(
+        previousUpdatedAt.getTime(),
+      );
       expect(updated.updatedAt).toEqual(new Date('2025-01-01T00:00:10.000Z'));
     });
 
@@ -119,7 +145,9 @@ describe('UsersService', () => {
 
       expect(updated.password).toBe('hashed_newpassword');
       expect(bcrypt.hash).toHaveBeenCalledWith('newpassword', 10);
-      expect(updated.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(
+        previousUpdatedAt.getTime(),
+      );
       expect(updated.updatedAt).toEqual(new Date('2025-01-01T00:00:10.000Z'));
     });
 
@@ -129,19 +157,26 @@ describe('UsersService', () => {
 
       jest.setSystemTime(new Date('2025-01-01T00:00:10.000Z'));
 
-      const dto: UpdateUserDto = { email: 'new@example.com', password: 'newpassword' };
+      const dto: UpdateUserDto = {
+        email: 'new@example.com',
+        password: 'newpassword',
+      };
       const updated = await service.update(created.id, dto);
 
       expect(updated.email).toBe('new@example.com');
       expect(updated.password).toBe('hashed_newpassword');
-      expect(updated.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(
+        previousUpdatedAt.getTime(),
+      );
       expect(updated.updatedAt).toEqual(new Date('2025-01-01T00:00:10.000Z'));
     });
   });
 
   describe('remove', () => {
     it('throws when user is missing', async () => {
-      await expect(service.remove('missing')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('missing')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('removes an existing user', async () => {
@@ -150,7 +185,8 @@ describe('UsersService', () => {
       const result = await service.remove(created.id);
 
       expect(result.id).toBe(created.id);
-      expect(usersStore).toHaveLength(0);
+      const lookup = await service.findOneById(created.id);
+      expect(lookup).toBeUndefined();
     });
   });
 });

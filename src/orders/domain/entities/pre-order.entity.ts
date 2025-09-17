@@ -1,3 +1,8 @@
+import {
+  CalculatedCommission,
+  CommissionMatrix,
+} from '../types/commission.types';
+
 export class PreOrder {
   id: string;
   userId: string;
@@ -6,8 +11,8 @@ export class PreOrder {
   quantity: number;
   totalPrice: number;
   currency: string;
-  commissions: any; // { USD: {fix: 0.3, commisionRate: 1}, EUR: {}}
-  calculatedCommissions: any; // {fix: calculatedSum, percentageRate: calculatedSum, total: fix + percentageRate}
+  commissions: CommissionMatrix;
+  calculatedCommissions?: CalculatedCommission;
   createdAt: Date;
   updatedAt: Date;
 }

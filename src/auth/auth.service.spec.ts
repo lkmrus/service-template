@@ -49,13 +49,19 @@ describe('AuthService', () => {
   describe('validateUser', () => {
     it('should return null if user not found', async () => {
       jest.spyOn(usersService, 'findOne').mockResolvedValue(undefined);
-      const user = await service.validateUser('nonexistent@example.com', 'password');
+      const user = await service.validateUser(
+        'nonexistent@example.com',
+        'password',
+      );
       expect(user).toBeNull();
     });
 
     it('should return null if password invalid', async () => {
       jest.spyOn(mockUserInstance, 'validatePassword').mockResolvedValue(false);
-      const user = await service.validateUser('test@example.com', 'wrongpassword');
+      const user = await service.validateUser(
+        'test@example.com',
+        'wrongpassword',
+      );
       expect(user).toBeNull();
     });
 

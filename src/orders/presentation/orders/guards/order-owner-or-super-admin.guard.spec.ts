@@ -20,8 +20,13 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     quantity: 0,
     totalPrice: 0,
     currency: '',
-    commissions: null,
-    calculatedCommissions: null,
+    commissions: {
+      USD: {
+        fix: 0,
+        commissionRate: 0,
+      },
+    },
+    calculatedCommissions: undefined,
     status: OrderStatus.PAID,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -45,7 +50,10 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(true);
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ user: { userId: 'super-admin-uuid' }, params: { id: 'order123' } }),
+        getRequest: () => ({
+          user: { id: 'super-admin-uuid' },
+          params: { id: 'order123' },
+        }),
       }),
     } as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(true);
@@ -56,7 +64,10 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(mockOrder);
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ user: { userId: 'user123' }, params: { id: 'order123' } }),
+        getRequest: () => ({
+          user: { id: 'user123' },
+          params: { id: 'order123' },
+        }),
       }),
     } as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(true);
@@ -67,7 +78,10 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(mockOrder);
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ user: { userId: 'another-user-uuid' }, params: { id: 'order123' } }),
+        getRequest: () => ({
+          user: { id: 'another-user-uuid' },
+          params: { id: 'order123' },
+        }),
       }),
     } as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(false);
@@ -78,7 +92,10 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(undefined);
     const context = {
       switchToHttp: () => ({
-        getRequest: () => ({ user: { userId: 'user123' }, params: { id: 'nonexistent-order' } }),
+        getRequest: () => ({
+          user: { id: 'user123' },
+          params: { id: 'nonexistent-order' },
+        }),
       }),
     } as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(false);

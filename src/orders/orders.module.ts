@@ -5,6 +5,7 @@ import { OrderService } from './application/order.service';
 import { OrdersService } from './application/orders/orders.service';
 import { TransactionCompletedListener } from './application/listeners/transaction-completed.listener';
 import { SuperAdminModule } from '../super-admin/super-admin.module';
+import { OrderOwnerOrSuperAdminGuard } from './presentation/orders/guards/order-owner-or-super-admin.guard';
 
 @Module({
   imports: [SuperAdminModule],
@@ -13,6 +14,7 @@ import { SuperAdminModule } from '../super-admin/super-admin.module';
     OrderService,
     OrdersService,
     TransactionCompletedListener,
+    OrderOwnerOrSuperAdminGuard,
   ],
   controllers: [OrdersController],
   exports: [OrdersService],

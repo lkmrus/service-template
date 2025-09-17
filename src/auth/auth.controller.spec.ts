@@ -14,7 +14,9 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            login: jest.fn().mockResolvedValue({ access_token: 'mockedAccessToken' }),
+            login: jest
+              .fn()
+              .mockResolvedValue({ access_token: 'mockedAccessToken' }),
           },
         },
       ],

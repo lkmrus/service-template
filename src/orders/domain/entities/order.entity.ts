@@ -1,4 +1,8 @@
 import { OrderStatus } from '../enums/order.enums';
+import {
+  CalculatedCommission,
+  CommissionMatrix,
+} from '../types/commission.types';
 
 export class Order {
   id: string;
@@ -10,8 +14,8 @@ export class Order {
   quantity: number;
   totalPrice: number;
   currency: string;
-  commissions: any;
-  calculatedCommissions: any;
+  commissions: CommissionMatrix;
+  calculatedCommissions?: CalculatedCommission;
   status: OrderStatus;
   createdAt: Date;
   updatedAt: Date;

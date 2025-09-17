@@ -13,6 +13,6 @@ export class SuperAdminOnlyGuard implements CanActivate {
       return false;
     }
 
-    return this.superAdminService.isSuperAdmin(user.userId);
+    return this.superAdminService.isSuperAdmin(user.id);
   }
 }

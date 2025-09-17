@@ -8,6 +8,9 @@ import { SuperAdminService } from '../../../super-admin/super-admin.service';
 import { ConfigService } from '@nestjs/config';
 
 class OrdersServiceMock {
+  completeOrder(id: string) {
+    return { id, status: 'COMPLETED' };
+  }
   rejectOrder(id: string) {
     return { id, status: 'REJECTED' };
   }
@@ -55,6 +58,18 @@ describe('OrdersController', () => {
       const orderId = '123';
       const result = await controller.rejectOrder(orderId);
       expect(result.status).toBe('REJECTED');
+    });
+  });
+
+  describe('completeOrder', () => {
+    it('should complete an order', async () => {
+      const orderId = '123';
+      jest.spyOn(ordersService, 'completeOrder');
+
+      const result = await controller.completeOrder(orderId);
+
+      expect(ordersService.completeOrder).toHaveBeenCalledWith(orderId);
+      expect(result.status).toBe('COMPLETED');
     });
   });
 });

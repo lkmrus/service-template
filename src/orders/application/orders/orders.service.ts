@@ -18,4 +18,13 @@ export class OrdersService {
     order.status = OrderStatus.REJECTED;
     return order;
   }
+
+  async completeOrder(id: string): Promise<Order> {
+    const order = await this.findOne(id);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    order.status = OrderStatus.COMPLETED;
+    return order;
+  }
 }
