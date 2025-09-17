@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -58,5 +59,30 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return removedUser;
+  }
+
+  async changePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<User> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const isCurrentValid = await bcrypt.compare(
+      currentPassword,
+      user.password ?? '',
+    );
+
+    if (!isCurrentValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.updatedAt = new Date();
+
+    return this.userRepository.save(user);
   }
 }

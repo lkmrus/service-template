@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from '../../presentation/users/dto/update-user.dto';
@@ -35,6 +39,8 @@ describe('UsersService', () => {
     repository.clear();
 
     jest.setSystemTime(new Date('2025-01-01T00:00:00.000Z'));
+
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -187,6 +193,44 @@ describe('UsersService', () => {
       expect(result.id).toBe(created.id);
       const lookup = await service.findOneById(created.id);
       expect(lookup).toBeUndefined();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('throws when user is missing', async () => {
+      await expect(
+        service.changePassword('missing', 'current', 'newpass'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws when current password does not match', async () => {
+      const created = await service.create('test@example.com', 'password');
+      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false);
+
+      await expect(
+        service.changePassword(created.id, 'wrong', 'newpass'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('updates password when current password matches', async () => {
+      const created = await service.create('test@example.com', 'password');
+      const previousUpdatedAt = created.updatedAt;
+
+      jest.setSystemTime(new Date('2025-01-01T00:01:00.000Z'));
+      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(true);
+
+      const result = await service.changePassword(
+        created.id,
+        'password',
+        'newpass',
+      );
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('newpass', 10);
+      expect(result.password).toBe('hashed_newpass');
+      expect(result.updatedAt.getTime()).toBeGreaterThan(
+        previousUpdatedAt.getTime(),
+      );
+      expect(result.updatedAt).toEqual(new Date('2025-01-01T00:01:00.000Z'));
     });
   });
 });

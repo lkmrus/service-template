@@ -23,7 +23,17 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     commissions: {
       USD: {
         fix: 0,
-        commissionRate: 0,
+        commissionRate: {
+          percentage: 5,
+          fraction: 0.05,
+        },
+      },
+      EUR: {
+        fix: 0,
+        commissionRate: {
+          percentage: 5,
+          fraction: 0.05,
+        },
       },
     },
     calculatedCommissions: undefined,

@@ -1,16 +1,58 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PreOrder } from '../domain/entities/pre-order.entity';
+import {
+  CommissionMatrix,
+  CommissionRateShape,
+} from '../domain/types/commission.types';
+import {
+  PRE_ORDER_REPOSITORY,
+  PreOrderRepository,
+} from '../domain/repositories/pre-order.repository';
+
+export interface CreatePreOrderInput {
+  userId: string;
+  sellerId: string;
+  productId: string;
+  quantity: number;
+  currency: string;
+  commissions: CommissionMatrix;
+}
 
 @Injectable()
 export class PreOrderService {
+  constructor(
+    @Inject(PRE_ORDER_REPOSITORY)
+    private readonly preOrderRepository: PreOrderRepository,
+  ) {}
+
   /**
    * Creates a new pre-order.
    * @param data - The data for the new pre-order.
    * @returns The created pre-order.
    */
-  async createPreOrder(data: Partial<PreOrder>): Promise<PreOrder> {
-    const preOrder = { ...data } as PreOrder;
-    // In a real implementation, we would save the pre-order to the database
+  async createPreOrder(data: CreatePreOrderInput): Promise<PreOrder> {
+    const preOrder = await this.preOrderRepository.create({
+      userId: data.userId,
+      sellerId: data.sellerId,
+      productId: data.productId,
+      quantity: data.quantity,
+      currency: data.currency,
+      commissions: data.commissions,
+    });
+
+    return this.calculateTotalPrice(preOrder);
+  }
+
+  async findById(id: string): Promise<PreOrder> {
+    const preOrder = await this.preOrderRepository.findById(id);
+    if (!preOrder) {
+      throw new NotFoundException(`Pre-order with id ${id} not found`);
+    }
     return preOrder;
   }
 
@@ -41,10 +83,11 @@ export class PreOrderService {
     }
 
     const { fix, commissionRate } = commissionConfig;
+    const { fraction } = this.resolveCommissionRate(commissionRate);
     const productPrice = 100; // In a real implementation, we would get this from the product service
 
     const calculatedSum = productPrice * quantity;
-    const percentageAmount = (calculatedSum * commissionRate) / 100;
+    const percentageAmount = calculatedSum * fraction;
 
     preOrder.calculatedCommissions = {
       fix,
@@ -53,7 +96,55 @@ export class PreOrderService {
     };
 
     preOrder.totalPrice = calculatedSum + preOrder.calculatedCommissions.total;
+    preOrder.updatedAt = new Date();
 
-    return preOrder;
+    return this.preOrderRepository.save(preOrder);
+  }
+
+  private resolveCommissionRate(commissionRate: CommissionRateShape): {
+    fraction: number;
+    percentage: number;
+  } {
+    if (!commissionRate) {
+      throw new BadRequestException('commission rate must be provided');
+    }
+
+    const { percentage, fraction } = commissionRate;
+
+    const hasPercentage = percentage !== undefined;
+    const hasFraction = fraction !== undefined;
+
+    if (!hasPercentage && !hasFraction) {
+      throw new BadRequestException(
+        'commission rate must include percentage or fraction value',
+      );
+    }
+
+    if (hasPercentage) {
+      if (percentage < 0 || percentage > 100) {
+        throw new BadRequestException(
+          'commission percentage must be between 0 and 100',
+        );
+      }
+    }
+
+    if (hasFraction) {
+      if (fraction < 0 || fraction > 1) {
+        throw new BadRequestException(
+          'commission fraction must be between 0 and 1',
+        );
+      }
+    }
+
+    const normalizedFraction = hasFraction ? fraction! : percentage! / 100;
+
+    const normalizedPercentage = hasPercentage
+      ? percentage!
+      : normalizedFraction * 100;
+
+    return {
+      fraction: normalizedFraction,
+      percentage: normalizedPercentage,
+    };
   }
 }

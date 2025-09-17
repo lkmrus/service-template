@@ -2,6 +2,7 @@ import { Controller, Post, Delete, Body, Param, Req } from '@nestjs/common';
 import { CreateSubscriptionUseCase } from '../../application/use-cases/create-subscription.use-case';
 import { CancelSubscriptionUseCase } from '../../application/use-cases/cancel-subscription.use-case';
 import { Request } from 'express';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 @Controller('billing')
 export class BillingController {
@@ -16,9 +17,7 @@ export class BillingController {
    * @returns The result of the use case execution.
    */
   @Post('subscriptions')
-  createSubscription(
-    @Body() body: { userId: string; planId: string; preOrderId: string },
-  ) {
+  createSubscription(@Body() body: CreateSubscriptionDto) {
     return this.createSubscriptionUseCase.execute(
       body.userId,
       body.planId,

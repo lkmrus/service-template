@@ -4,6 +4,6 @@ export class Subscription {
   planId: string;
   status: 'active' | 'canceled' | 'past_due';
   startDate: Date;
-  endDate: Date;
-  nextPaymentDate: Date;
+  endDate?: Date;
+  nextPaymentDate?: Date;
 }

@@ -4,5 +4,5 @@ export class Invoice {
   amount: number;
   status: 'paid' | 'open' | 'void';
   createdAt: Date;
-  pdfUrl: string;
+  pdfUrl?: string;
 }

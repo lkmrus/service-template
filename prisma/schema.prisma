@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum OrderStatus {
+  paid
+  completed
+  rejected
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
+  canceled
+  refunded
+}
+
+enum PaymentMethod {
+  balance
+  stripe
+}
+
+enum SubscriptionStatus {
+  active
+  canceled
+  past_due
+}
+
+enum PlanInterval {
+  month
+  year
+}
+
+enum InvoiceStatus {
+  paid
+  open
+  void
+}
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  orders            Order[]
+  preOrders         PreOrder[]
+  transactions      Transaction[]
+  customer          Customer?
+  balance           Balance?
+}
+
+model PreOrder {
+  id                     String   @id @default(uuid())
+  userId                 String
+  sellerId               String
+  productId              String
+  quantity               Int      @default(0)
+  totalPrice             Float    @default(0)
+  currency               String
+  commissions            Json
+  calculatedCommissions  Json?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [id])
+  order                  Order?
+}
+
+model Order {
+  id                    String      @id @default(uuid())
+  preOrderId            String?     @unique
+  transactionId         String?     @unique
+  userId                String
+  sellerId              String
+  productId             String
+  quantity              Int         @default(0)
+  totalPrice            Float       @default(0)
+  currency              String
+  commissions           Json
+  calculatedCommissions Json?
+  status                OrderStatus @default(paid)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id])
+  preOrder              PreOrder?   @relation(fields: [preOrderId], references: [id])
+  transaction           Transaction? @relation(fields: [transactionId], references: [id])
+}
+
+model Transaction {
+  id               String             @id @default(uuid())
+  userId           String
+  serviceAccountId String
+  amountIn         Float              @default(0)
+  amountOut        Float              @default(0)
+  currency         String
+  status           TransactionStatus
+  paymentMethod    PaymentMethod
+  externalId       String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User               @relation(fields: [userId], references: [id])
+  orders           Order[]
+}
+
+model Balance {
+  userId    String  @id
+  amountIn  Float   @default(0)
+  amountOut Float   @default(0)
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Customer {
+  customerId String  @id
+  userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+}
+
+model Plan {
+  planId      String       @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  currency    String
+  interval    PlanInterval
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  subscriptionId String             @id @default(uuid())
+  customerId     String
+  planId         String
+  status         SubscriptionStatus
+  startDate      DateTime
+  endDate        DateTime?
+  nextPaymentDate DateTime?
+  customer       Customer           @relation(fields: [customerId], references: [customerId])
+  plan           Plan               @relation(fields: [planId], references: [planId])
+  invoices       Invoice[]
+}
+
+model Invoice {
+  invoiceId      String        @id @default(uuid())
+  subscriptionId String
+  amount         Float
+  status         InvoiceStatus
+  createdAt      DateTime      @default(now())
+  pdfUrl         String?
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [subscriptionId])
+  payments       Payment[]
+}
+
+model Payment {
+  paymentId String   @id @default(uuid())
+  invoiceId String
+  amount    Float
+  createdAt DateTime @default(now())
+  invoice   Invoice  @relation(fields: [invoiceId], references: [invoiceId])
+}

@@ -28,13 +28,19 @@ class SuperAdminServiceMock {
 describe('OrdersController', () => {
   let controller: OrdersController;
   let ordersService: OrdersService;
+  let preOrderService: PreOrderService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrdersController],
       providers: [
         { provide: OrdersService, useClass: OrdersServiceMock },
-        { provide: PreOrderService, useValue: {} },
+        {
+          provide: PreOrderService,
+          useValue: {
+            createPreOrder: jest.fn(),
+          },
+        },
         { provide: SuperAdminService, useClass: SuperAdminServiceMock },
         { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
@@ -47,10 +53,38 @@ describe('OrdersController', () => {
 
     controller = module.get<OrdersController>(OrdersController);
     ordersService = module.get<OrdersService>(OrdersService);
+    preOrderService = module.get<PreOrderService>(PreOrderService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('createPreOrder', () => {
+    it('delegates to pre-order service', async () => {
+      const payload = {
+        userId: 'user-1',
+        sellerId: 'seller-1',
+        productId: 'product-1',
+        quantity: 1,
+        currency: 'USD',
+        commissions: {
+          USD: {
+            fix: 5,
+            commissionRate: {
+              percentage: 5,
+            },
+          },
+        },
+      };
+      const expected = { id: 'pre-order', currency: 'USD' } as any;
+      (preOrderService.createPreOrder as jest.Mock).mockResolvedValue(expected);
+
+      const result = await controller.createPreOrder(payload);
+
+      expect(preOrderService.createPreOrder).toHaveBeenCalledWith(payload);
+      expect(result).toBe(expected);
+    });
   });
 
   describe('rejectOrder', () => {

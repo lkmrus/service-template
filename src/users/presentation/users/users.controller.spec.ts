@@ -3,6 +3,8 @@ import { UsersController } from './users.controller';
 import { UsersService } from '../../application/users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SuperAdminOnlyGuard } from './guards/super-admin-only.guard';
 
@@ -31,6 +33,11 @@ describe('UsersController', () => {
               id: '1',
               email: 'test@example.com',
               password: 'hashed_value',
+            }),
+            changePassword: jest.fn().mockResolvedValue({
+              id: '1',
+              email: 'test@example.com',
+              password: 'hashed_new',
             }),
           },
         },
@@ -84,6 +91,41 @@ describe('UsersController', () => {
       expect(usersService.remove).toHaveBeenCalledWith(userId);
       expect(result).toEqual({ id: '1', email: 'test@example.com' });
       expect(result).not.toHaveProperty('password');
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change the password for the authenticated user', async () => {
+      const userId = '1';
+      const dto: ChangePasswordDto = {
+        currentPassword: 'current',
+        newPassword: 'newPassword',
+      };
+
+      const request = { user: { id: '1' } } as any;
+
+      const result = await controller.changePassword(userId, dto, request);
+
+      expect(usersService.changePassword).toHaveBeenCalledWith(
+        userId,
+        dto.currentPassword,
+        dto.newPassword,
+      );
+      expect(result).toEqual({ id: '1', email: 'test@example.com' });
+    });
+
+    it('throws when requester is different from target user', async () => {
+      const dto: ChangePasswordDto = {
+        currentPassword: 'current',
+        newPassword: 'newPassword',
+      };
+
+      const request = { user: { id: 'another-user' } } as any;
+
+      await expect(
+        controller.changePassword('1', dto, request),
+      ).rejects.toThrow(ForbiddenException);
+      expect(usersService.changePassword).not.toHaveBeenCalled();
     });
   });
 });

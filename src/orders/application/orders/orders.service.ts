@@ -1,13 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Order } from '../../domain/entities/order.entity';
 import { OrderStatus } from '../../domain/enums/order.enums';
+import {
+  ORDER_REPOSITORY,
+  OrderRepository,
+} from '../../domain/repositories/order.repository';
 
 @Injectable()
 export class OrdersService {
-  private readonly orders: Order[] = [];
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: OrderRepository,
+  ) {}
 
   async findOne(id: string): Promise<Order | undefined> {
-    return this.orders.find((order) => order.id === id);
+    return this.orderRepository.findById(id);
   }
 
   async rejectOrder(id: string): Promise<Order> {
@@ -16,7 +23,8 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
     order.status = OrderStatus.REJECTED;
-    return order;
+    order.updatedAt = new Date();
+    return this.orderRepository.save(order);
   }
 
   async completeOrder(id: string): Promise<Order> {
@@ -25,6 +33,7 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
     order.status = OrderStatus.COMPLETED;
-    return order;
+    order.updatedAt = new Date();
+    return this.orderRepository.save(order);
   }
 }

@@ -6,8 +6,8 @@ import {
 
 export class Order {
   id: string;
-  preOrderId: string;
-  transactionId: string;
+  preOrderId?: string;
+  transactionId?: string;
   userId: string;
   sellerId: string;
   productId: string;

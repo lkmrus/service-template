@@ -1,14 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Transaction } from '../../domain/entities/transaction.entity';
 import {
   TransactionStatus,
   PaymentMethod,
 } from '../../domain/enums/transaction.enums';
+import {
+  TRANSACTION_REPOSITORY,
+  TransactionRepository,
+} from '../../domain/repositories/transaction.repository';
 
 @Injectable()
 export class TransactionsService {
-  // private readonly transactionRepository: ITransactionRepository;
-  // private readonly balanceRepository: IBalanceRepository;
+  constructor(
+    @Inject(TRANSACTION_REPOSITORY)
+    private readonly transactionRepository: TransactionRepository,
+  ) {}
 
   /**
    * Creates a new transaction and updates the user's balance.
@@ -25,20 +31,18 @@ export class TransactionsService {
     paymentMethod: PaymentMethod;
     externalId?: string;
   }): Promise<Transaction> {
-    // 1. Create the transaction
-    const transaction = {
-      ...data,
-      amountIn: data.amountIn || 0,
-      amountOut: data.amountOut || 0,
-    } as Transaction;
-    // const createdTransaction = await this.transactionRepository.create(transaction);
+    const transaction = await this.transactionRepository.create({
+      userId: data.userId,
+      serviceAccountId: data.serviceAccountId,
+      amountIn: data.amountIn,
+      amountOut: data.amountOut,
+      currency: data.currency,
+      status: data.status,
+      paymentMethod: data.paymentMethod,
+      externalId: data.externalId ?? null,
+    });
 
-    // 2. Update the user's balance atomically
-    // await this.balanceRepository.updateBalance(
-    //   data.userId,
-    //   data.amountIn || 0,
-    //   data.amountOut || 0,
-    // );
+    // Balance updates would happen here in a future implementation
 
     return transaction;
   }
@@ -49,7 +53,11 @@ export class TransactionsService {
    * @returns The found transaction.
    */
   async findOne(id: string): Promise<Transaction> {
-    return { id } as Transaction;
+    const transaction = await this.transactionRepository.findById(id);
+    if (!transaction) {
+      throw new NotFoundException(`Transaction with id ${id} not found`);
+    }
+    return transaction;
   }
 
   /**
@@ -62,6 +70,28 @@ export class TransactionsService {
     id: string,
     transaction: Partial<Transaction>,
   ): Promise<Transaction> {
-    return transaction as Transaction;
+    const existing = await this.findOne(id);
+
+    if (transaction.amountIn !== undefined) {
+      existing.amountIn = transaction.amountIn;
+    }
+    if (transaction.amountOut !== undefined) {
+      existing.amountOut = transaction.amountOut;
+    }
+    if (transaction.currency) {
+      existing.currency = transaction.currency;
+    }
+    if (transaction.status) {
+      existing.status = transaction.status;
+    }
+    if (transaction.paymentMethod) {
+      existing.paymentMethod = transaction.paymentMethod;
+    }
+    if (transaction.externalId !== undefined) {
+      existing.externalId = transaction.externalId;
+    }
+    existing.updatedAt = new Date();
+
+    return this.transactionRepository.save(existing);
   }
 }

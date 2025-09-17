@@ -19,10 +19,7 @@ export class TransactionCompletedListener {
     preOrderId: string;
     transactionId: string;
   }) {
-    // In a real implementation, we would fetch the pre-order from the database
-    const preOrder = await this.preOrderService.createPreOrder({
-      id: payload.preOrderId,
-    });
+    const preOrder = await this.preOrderService.findById(payload.preOrderId);
 
     await this.orderService.createOrderFromPreOrder(
       preOrder,

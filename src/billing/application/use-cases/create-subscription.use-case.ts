@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   PAYMENT_GATEWAY_TOKEN,
@@ -9,12 +9,31 @@ import {
   TransactionStatus,
   PaymentMethod,
 } from '../../../transactions/domain/enums/transaction.enums';
+import {
+  CUSTOMER_REPOSITORY,
+  CustomerRepository,
+} from '../../domain/repositories/customer.repository';
+import {
+  PLAN_REPOSITORY,
+  PlanRepository,
+} from '../../domain/repositories/plan.repository';
+import {
+  SUBSCRIPTION_REPOSITORY,
+  SubscriptionRepository,
+} from '../../domain/repositories/subscription.repository';
+import { SubscriptionStatusChangedEvent } from '../../domain/events/subscription-status-changed.event';
 
 @Injectable()
 export class CreateSubscriptionUseCase {
   constructor(
     @Inject(PAYMENT_GATEWAY_TOKEN)
     private readonly paymentGateway: PaymentGateway,
+    @Inject(CUSTOMER_REPOSITORY)
+    private readonly customerRepository: CustomerRepository,
+    @Inject(PLAN_REPOSITORY)
+    private readonly planRepository: PlanRepository,
+    @Inject(SUBSCRIPTION_REPOSITORY)
+    private readonly subscriptionRepository: SubscriptionRepository,
     private readonly transactionsService: TransactionsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -27,22 +46,39 @@ export class CreateSubscriptionUseCase {
    * @returns The ID and status of the new subscription.
    */
   async execute(userId: string, planId: string, preOrderId: string) {
-    // For now, we'll assume the user exists and has a customerId
-    const customerId = 'cus_123'; // a real implementation would fetch this from the db
-    const { subscriptionId, status } =
-      await this.paymentGateway.createSubscription(customerId, planId);
+    const customer = await this.customerRepository.findByUserId(userId);
+    if (!customer) {
+      throw new NotFoundException(
+        `Billing customer for user ${userId} not found`,
+      );
+    }
 
-    // For now, we'll assume a full payment from balance
-    // In a real implementation, we would get the plan amount and currency from the planId
-    const amount = 100;
-    const currency = 'USD';
-    const serviceAccountId = 'service_account_123';
+    const plan = await this.planRepository.findById(planId);
+    if (!plan) {
+      throw new NotFoundException(`Plan ${planId} not found`);
+    }
+
+    const { subscriptionId, status } =
+      await this.paymentGateway.createSubscription(
+        customer.customerId,
+        plan.planId,
+      );
+
+    const subscription = await this.subscriptionRepository.create({
+      subscriptionId,
+      customerId: customer.customerId,
+      planId: plan.planId,
+      status: status as 'active' | 'canceled' | 'past_due',
+      startDate: new Date(),
+      endDate: null,
+      nextPaymentDate: this.calculateNextPaymentDate(plan.interval),
+    });
 
     const transaction = await this.transactionsService.createTransaction({
       userId,
-      serviceAccountId,
-      amountOut: amount,
-      currency,
+      serviceAccountId: 'service_account_123',
+      amountOut: plan.price,
+      currency: plan.currency,
       status: TransactionStatus.COMPLETED,
       paymentMethod: PaymentMethod.BALANCE,
     });
@@ -52,6 +88,29 @@ export class CreateSubscriptionUseCase {
       transactionId: transaction.id,
     });
 
-    return { subscriptionId, status };
+    this.eventEmitter.emit(
+      'subscription.status.changed',
+      new SubscriptionStatusChangedEvent(
+        userId,
+        'pending',
+        subscription.status,
+        plan.planId,
+      ),
+    );
+
+    return {
+      subscriptionId: subscription.subscriptionId,
+      status: subscription.status,
+    };
+  }
+
+  private calculateNextPaymentDate(interval: 'month' | 'year'): Date | null {
+    const next = new Date();
+    if (interval === 'month') {
+      next.setMonth(next.getMonth() + 1);
+    } else {
+      next.setFullYear(next.getFullYear() + 1);
+    }
+    return next;
   }
 }
