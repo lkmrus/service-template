@@ -13,6 +13,7 @@ import { CommonMiddlewareModule } from './common/common-middleware.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { appConfig, configValidationSchema } from './config/config';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { appConfig, configValidationSchema } from './config/config';
     EventEmitterModule.forRoot(),
     TransactionsModule,
     OrdersModule,
+    ProductsModule,
     UsersModule,
     AuthModule,
     SuperAdminModule,
