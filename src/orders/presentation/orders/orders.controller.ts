@@ -1,15 +1,24 @@
-import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { PreOrderService } from '../../application/pre-order.service';
-import { OrderService } from '../../application/order.service';
+import { OrdersService } from '../../application/orders/orders.service';
 import { PreOrder } from '../../domain/entities/pre-order.entity';
 import { Order } from '../../domain/entities/order.entity';
 import { OrderStatus } from '../../domain/enums/order.enums';
+import { AuthGuard } from '@nestjs/passport';
+import { OrderOwnerOrSuperAdminGuard } from './guards/order-owner-or-super-admin.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly preOrderService: PreOrderService,
-    private readonly orderService: OrderService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   /**
@@ -40,9 +49,8 @@ export class OrdersController {
    * @returns The updated order.
    */
   @Patch(':id/reject')
+  @UseGuards(AuthGuard('jwt'), OrderOwnerOrSuperAdminGuard)
   async rejectOrder(@Param('id') id: string): Promise<Order> {
-    // In a real implementation, we would fetch the order from the database
-    const order = { id, transactionId: 'transaction_123' } as Order;
-    return this.orderService.rejectOrder(order);
+    return this.ordersService.rejectOrder(id);
   }
 }
