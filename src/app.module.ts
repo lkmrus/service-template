@@ -14,6 +14,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { appConfig, configValidationSchema } from './config/config';
 import { ProductsModule } from './products/products.module';
+import { PubSubModule } from './pub-sub/pub-sub.module';
+import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ProductsModule } from './products/products.module';
     TransactionsModule,
     OrdersModule,
     ProductsModule,
+    PubSubModule,
+    GraphqlModule.forRootAsync(),
     UsersModule,
     AuthModule,
     SuperAdminModule,

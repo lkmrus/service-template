@@ -136,10 +136,10 @@ export class PreOrderService {
       }
     }
 
-    const normalizedFraction = hasFraction ? fraction! : percentage! / 100;
+    const normalizedFraction = hasFraction ? fraction : percentage! / 100;
 
     const normalizedPercentage = hasPercentage
-      ? percentage!
+      ? percentage
       : normalizedFraction * 100;
 
     return {

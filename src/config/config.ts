@@ -6,9 +6,20 @@ export const configValidationSchema = Joi.object({
   SUPABASE_SERVICE_ROLE_KEY: Joi.string().optional(),
   DATA_PROVIDER: Joi.string().valid('supabase', 'prisma').default('supabase'),
   STRIPE_API_KEY: Joi.string().optional(),
+  REDIS_HOST: Joi.string().hostname().default('localhost'),
+  REDIS_PORT: Joi.number().port().default(6379),
 });
 
 export type DataProvider = 'supabase' | 'prisma';
+
+export interface GQLConfig {
+  persistedQueriesTTL: number;
+}
+
+export interface RedisConfig {
+  host: string;
+  port: number;
+}
 
 export interface AppConfig {
   databaseUrl?: string;
@@ -16,6 +27,8 @@ export interface AppConfig {
   supabaseServiceRoleKey?: string;
   dataProvider: DataProvider;
   stripeApiKey?: string;
+  gql: GQLConfig;
+  redis: RedisConfig;
 }
 
 export const appConfig = (): AppConfig => ({
@@ -26,4 +39,11 @@ export const appConfig = (): AppConfig => ({
     process.env.DATA_PROVIDER ?? 'supabase'
   ).toLowerCase() as DataProvider,
   stripeApiKey: process.env.STRIPE_API_KEY,
+  gql: {
+    persistedQueriesTTL: +(process.env.PERSISTED_QUERIES_TTL ?? '86400'),
+  },
+  redis: {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? '6379'),
+  },
 });
