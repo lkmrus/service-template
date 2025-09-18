@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { SharedRabbitmqService } from './shared-rabbitmq.service';
+import { AppConfig } from '../config/config';
 
 export class SharedRabbitMQModule {
   /**
@@ -16,8 +17,20 @@ export class SharedRabbitMQModule {
       module: SharedRabbitMQModule,
       providers: [SharedRabbitmqService],
       imports: [
-        RabbitMQModule.forRootAsync(RabbitMQModule, {
-          useFactory: async (cfg: ConfigService) => ({ ...cfg.get('rabbit'), registerHandlers }),
+        RabbitMQModule.forRootAsync({
+          useFactory: async (configService: ConfigService<AppConfig>) => {
+            const rabbitConfig =
+              configService.get<AppConfig['rabbit']>('rabbit');
+
+            if (!rabbitConfig?.uri) {
+              throw new Error('RabbitMQ configuration is missing');
+            }
+
+            return {
+              ...rabbitConfig,
+              registerHandlers,
+            };
+          },
           inject: [ConfigService],
         }),
       ],

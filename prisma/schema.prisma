@@ -2,9 +2,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+// }
+
+// postgresql
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum OrderStatus {
@@ -44,105 +50,105 @@ enum InvoiceStatus {
 }
 
 model User {
-  id                String         @id @default(uuid())
-  email             String         @unique
-  password          String
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  orders            Order[]
-  preOrders         PreOrder[]
-  transactions      Transaction[]
-  customer          Customer?
-  balance           Balance?
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       Order[]
+  preOrders    PreOrder[]
+  transactions Transaction[]
+  customer     Customer?
+  balance      Balance?
 }
 
 model PreOrder {
-  id                     String   @id @default(uuid())
-  userId                 String
-  sellerId               String
-  productId              String
-  quantity               Int      @default(0)
-  totalPrice             Float    @default(0)
-  currency               String
-  commissions            Json
-  calculatedCommissions  Json?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  user                   User     @relation(fields: [userId], references: [id])
-  order                  Order?
-}
-
-model Order {
-  id                    String      @id @default(uuid())
-  preOrderId            String?     @unique
-  transactionId         String?     @unique
+  id                    String   @id @default(uuid())
   userId                String
   sellerId              String
   productId             String
-  quantity              Int         @default(0)
-  totalPrice            Float       @default(0)
+  quantity              Int      @default(0)
+  totalPrice            Float    @default(0)
   currency              String
   commissions           Json
   calculatedCommissions Json?
-  status                OrderStatus @default(paid)
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  user                  User        @relation(fields: [userId], references: [id])
-  preOrder              PreOrder?   @relation(fields: [preOrderId], references: [id])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id])
+  order                 Order?
+}
+
+model Order {
+  id                    String       @id @default(uuid())
+  preOrderId            String?      @unique
+  transactionId         String?      @unique
+  userId                String
+  sellerId              String
+  productId             String
+  quantity              Int          @default(0)
+  totalPrice            Float        @default(0)
+  currency              String
+  commissions           Json
+  calculatedCommissions Json?
+  status                OrderStatus  @default(paid)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  user                  User         @relation(fields: [userId], references: [id])
+  preOrder              PreOrder?    @relation(fields: [preOrderId], references: [id])
   transaction           Transaction? @relation(fields: [transactionId], references: [id])
 }
 
 model Transaction {
-  id               String             @id @default(uuid())
+  id               String            @id @default(uuid())
   userId           String
   serviceAccountId String
-  amountIn         Float              @default(0)
-  amountOut        Float              @default(0)
+  amountIn         Float             @default(0)
+  amountOut        Float             @default(0)
   currency         String
   status           TransactionStatus
   paymentMethod    PaymentMethod
   externalId       String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  user             User               @relation(fields: [userId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id])
   orders           Order[]
 }
 
 model Balance {
-  userId    String  @id
-  amountIn  Float   @default(0)
-  amountOut Float   @default(0)
-  user      User    @relation(fields: [userId], references: [id])
+  userId    String @id
+  amountIn  Float  @default(0)
+  amountOut Float  @default(0)
+  user      User   @relation(fields: [userId], references: [id])
 }
 
 model Customer {
-  customerId String  @id
-  userId     String  @unique
-  user       User    @relation(fields: [userId], references: [id])
+  customerId    String         @id
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id])
   subscriptions Subscription[]
 }
 
 model Plan {
-  planId      String       @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  currency    String
-  interval    PlanInterval
+  planId        String         @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  currency      String
+  interval      PlanInterval
   subscriptions Subscription[]
 }
 
 model Subscription {
-  subscriptionId String             @id @default(uuid())
-  customerId     String
-  planId         String
-  status         SubscriptionStatus
-  startDate      DateTime
-  endDate        DateTime?
+  subscriptionId  String             @id @default(uuid())
+  customerId      String
+  planId          String
+  status          SubscriptionStatus
+  startDate       DateTime
+  endDate         DateTime?
   nextPaymentDate DateTime?
-  customer       Customer           @relation(fields: [customerId], references: [customerId])
-  plan           Plan               @relation(fields: [planId], references: [planId])
-  invoices       Invoice[]
+  customer        Customer           @relation(fields: [customerId], references: [customerId])
+  plan            Plan               @relation(fields: [planId], references: [planId])
+  invoices        Invoice[]
 }
 
 model Invoice {
@@ -162,6 +168,56 @@ model Payment {
   amount    Float
   createdAt DateTime @default(now())
   invoice   Invoice  @relation(fields: [invoiceId], references: [invoiceId])
+}
+
+model Cart {
+  id             String    @id @default(uuid())
+  ownerId        String?
+  authorId       String?
+  couponCode     String?
+  metadata       Json?
+  mergedToCartId String?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  mergedToCart   Cart?          @relation("CartMerge", fields: [mergedToCartId], references: [id])
+  mergedChildren Cart[]         @relation("CartMerge")
+  lineItems      CartLineItem[]
+}
+
+model CartLineItemType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lineItems CartLineItem[]
+}
+
+model CartLineItem {
+  id                     String    @id @default(uuid())
+  cartId                 String?
+  typeId                 String
+  parentLineItemId       String?
+  parentBundleId         String?
+  orderStubId            String?
+  externalUuid           String?
+  productSelectionParams Json?
+  priceUSD               Decimal?
+  gracePeriod            DateTime?
+  metadata               Json?
+  deletedAt              DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  cart           Cart?            @relation(fields: [cartId], references: [id])
+  type           CartLineItemType @relation(fields: [typeId], references: [id])
+  parentLineItem CartLineItem?    @relation("CartLineItemChildren", fields: [parentLineItemId], references: [id])
+  lineItems      CartLineItem[]   @relation("CartLineItemChildren")
+  parentBundle   CartLineItem?    @relation("CartLineItemBundle", fields: [parentBundleId], references: [id])
+  bundleItems    CartLineItem[]   @relation("CartLineItemBundle")
 }
 
 model Product {

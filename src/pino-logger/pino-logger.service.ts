@@ -15,7 +15,7 @@ export class PinoLogger extends ConsoleLogger {
       return this.context;
     }
 
-    return lastElement as string;
+    return lastElement;
   }
 
   private writeLog(level: Level, args: any[]): void {

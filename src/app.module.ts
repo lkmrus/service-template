@@ -19,6 +19,7 @@ import { GraphqlModule } from './graphql/graphql.module';
 import { PinoLoggerModule } from './pino-logger/pino-logger.module';
 import { CronSchedulerModule } from './cron-scheduler/cron-scheduler.module';
 import { SharedRabbitMQModule } from './shared-rabbitmq/shared-rabbitmq.module';
+import { CartsModule } from './carts/carts.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { SharedRabbitMQModule } from './shared-rabbitmq/shared-rabbitmq.module';
     PinoLoggerModule,
     CronSchedulerModule,
     SharedRabbitMQModule.register(),
+    CartsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
