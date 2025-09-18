@@ -12,7 +12,7 @@ services:
       PORT: 3000
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      DATABASE_URL: postgres://billing:billing@postgres:5432/billing
+      DATABASE_URL: postgres://db:db@postgres:5432/db
     depends_on:
       redis:
         condition: service_started
@@ -35,9 +35,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: billing
-      POSTGRES_PASSWORD: billing
-      POSTGRES_DB: billing
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db
+      POSTGRES_DB: db
     ports:
       - '5432:5432'
     volumes:
