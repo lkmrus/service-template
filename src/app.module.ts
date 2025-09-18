@@ -16,6 +16,8 @@ import { appConfig, configValidationSchema } from './config/config';
 import { ProductsModule } from './products/products.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { GraphqlModule } from './graphql/graphql.module';
+import { PinoLoggerModule } from './pino-logger/pino-logger.module';
+import { CronSchedulerModule } from './cron-scheduler/cron-scheduler.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { GraphqlModule } from './graphql/graphql.module';
     AuthModule,
     SuperAdminModule,
     CommonMiddlewareModule,
+    PinoLoggerModule,
+    CronSchedulerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
