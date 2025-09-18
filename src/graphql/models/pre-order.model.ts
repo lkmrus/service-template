@@ -1,4 +1,10 @@
-import { Field, Float, Int, ObjectType, GraphQLISODateTime } from '@nestjs/graphql';
+import {
+  Field,
+  Float,
+  Int,
+  ObjectType,
+  GraphQLISODateTime,
+} from '@nestjs/graphql';
 import { JSONScalar } from '../scalars/json.scalar';
 import { CalculatedCommission } from '../../orders/domain/types/commission.types';
 import { CalculatedCommissionModel } from './commission.model';

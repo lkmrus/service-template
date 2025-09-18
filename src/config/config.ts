@@ -1,4 +1,8 @@
 import * as Joi from 'joi';
+import {
+  MessageHandlerErrorBehavior,
+  RabbitMQConfig,
+} from '@golevelup/nestjs-rabbitmq';
 
 export const configValidationSchema = Joi.object({
   DATABASE_URL: Joi.string().uri().optional(),
@@ -8,6 +12,7 @@ export const configValidationSchema = Joi.object({
   STRIPE_API_KEY: Joi.string().optional(),
   REDIS_HOST: Joi.string().hostname().default('localhost'),
   REDIS_PORT: Joi.number().port().default(6379),
+  RABBITMQ_DSN: Joi.string().uri().optional(),
 });
 
 export type DataProvider = 'supabase' | 'prisma';
@@ -29,6 +34,7 @@ export interface AppConfig {
   stripeApiKey?: string;
   gql: GQLConfig;
   redis: RedisConfig;
+  rabbit: RabbitMQConfig;
 }
 
 export const appConfig = (): AppConfig => ({
@@ -45,5 +51,18 @@ export const appConfig = (): AppConfig => ({
   redis: {
     host: process.env.REDIS_HOST ?? 'localhost',
     port: Number(process.env.REDIS_PORT ?? '6379'),
+  },
+  rabbit: <RabbitMQConfig>{
+    uri: process.env.RABBITMQ_DSN ?? 'amqp://localhost:5672',
+    connectionInitOptions: {
+      wait: false,
+      reject: false,
+      timeout: 1000,
+      skipConnectionFailedLogging: true,
+      skipDisconnectFailedLogging: true,
+    },
+    exchanges: [{ name: 'events', createExchangeIfNotExists: true }],
+    enableControllerDiscovery: true,
+    defaultSubscribeErrorBehavior: MessageHandlerErrorBehavior.NACK,
   },
 });

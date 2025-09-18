@@ -1,7 +1,14 @@
-import { CreateAxiosDefaults, AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import {
+  CreateAxiosDefaults,
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+} from 'axios';
 import { QueueOptions, BackoffStrategy } from 'bullmq';
 
-export type IsUnrecoverableErrorFn = (err: AxiosError & AggregateError) => boolean;
+export type IsUnrecoverableErrorFn = (
+  err: AxiosError & AggregateError,
+) => boolean;
 export type CustomErrorHandlerFn = (err: AxiosError & AggregateError) => void;
 export type debugDataLoggerProcessorFn = (job: AxiosRequestConfig) => any;
 

@@ -14,7 +14,7 @@ export class CronSchedulerModule {
       module: CronSchedulerModule,
       imports: [
         BullModule.forRootAsync({
-          useFactory: async (
+          useFactory: (
             configService: ConfigService,
             redisService: ClientRedis,
           ) => {

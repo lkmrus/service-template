@@ -2,7 +2,10 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ProductsService } from '../../products/application/products.service';
 import { ProductModel } from '../models/product.model';
-import { CreateProductInput, UpdateProductInput } from '../inputs/product.input';
+import {
+  CreateProductInput,
+  UpdateProductInput,
+} from '../inputs/product.input';
 import { GqlAuthGuard } from '../../auth/guards/gql-auth.guard';
 import { SuperAdminGuard } from '../../super-admin/super-admin.guard';
 import { ProductPrices } from '../../products/domain/types/product-prices.type';
@@ -44,9 +47,7 @@ export class ProductsResolver {
     @Args('input') input: UpdateProductInput,
   ): Promise<ProductModel> {
     const prices =
-      input.prices !== undefined
-        ? (input.prices as ProductPrices)
-        : undefined;
+      input.prices !== undefined ? (input.prices as ProductPrices) : undefined;
 
     return this.productsService.updateProduct(id, {
       ...input,

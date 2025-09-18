@@ -18,6 +18,7 @@ import { PubSubModule } from './pub-sub/pub-sub.module';
 import { GraphqlModule } from './graphql/graphql.module';
 import { PinoLoggerModule } from './pino-logger/pino-logger.module';
 import { CronSchedulerModule } from './cron-scheduler/cron-scheduler.module';
+import { SharedRabbitMQModule } from './shared-rabbitmq/shared-rabbitmq.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CronSchedulerModule } from './cron-scheduler/cron-scheduler.module';
     CommonMiddlewareModule,
     PinoLoggerModule,
     CronSchedulerModule,
+    SharedRabbitMQModule.register(),
   ],
   controllers: [AppController],
   providers: [AppService],

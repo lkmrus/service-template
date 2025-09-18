@@ -194,9 +194,7 @@ export class BullmqAxiosService implements OnModuleDestroy {
     this.customErrorHandler(err);
   }
 
-  private createRedisConnectionOptions(
-    namespace: string,
-  ): ConnectionOptions {
+  private createRedisConnectionOptions(namespace: string): ConnectionOptions {
     const clientOptions =
       typeof this.redisService.getClientOptions === 'function'
         ? this.redisService.getClientOptions()
