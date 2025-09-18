@@ -1,10 +1,8 @@
 import {
   IsEnum,
-  IsISO8601,
   IsNumber,
   IsObject,
   IsOptional,
-  IsString,
   IsUUID,
   Max,
   Min,
@@ -16,8 +14,8 @@ export class CreateCartLineItemDto {
   typeCode: LineItemCode;
 
   @IsOptional()
-  @IsString()
-  orderStubId?: string;
+  @IsUUID()
+  preOrderId?: string;
 
   @IsOptional()
   @IsUUID()
@@ -32,18 +30,6 @@ export class CreateCartLineItemDto {
   @Min(0)
   @Max(1_000_000)
   priceUSD?: number;
-
-  @IsOptional()
-  @IsISO8601({ strict: true })
-  gracePeriod?: string;
-
-  @IsOptional()
-  @IsUUID()
-  parentLineItemId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  parentBundleId?: string;
 
   @IsOptional()
   @IsObject()

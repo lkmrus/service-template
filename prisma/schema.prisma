@@ -200,24 +200,17 @@ model CartLineItem {
   id                     String    @id @default(uuid())
   cartId                 String?
   typeId                 String
-  parentLineItemId       String?
-  parentBundleId         String?
-  orderStubId            String?
+  preOrderId             String?
   externalUuid           String?
   productSelectionParams Json?
   priceUSD               Decimal?
-  gracePeriod            DateTime?
   metadata               Json?
   deletedAt              DateTime?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
-  cart           Cart?            @relation(fields: [cartId], references: [id])
-  type           CartLineItemType @relation(fields: [typeId], references: [id])
-  parentLineItem CartLineItem?    @relation("CartLineItemChildren", fields: [parentLineItemId], references: [id])
-  lineItems      CartLineItem[]   @relation("CartLineItemChildren")
-  parentBundle   CartLineItem?    @relation("CartLineItemBundle", fields: [parentBundleId], references: [id])
-  bundleItems    CartLineItem[]   @relation("CartLineItemBundle")
+  cart Cart?            @relation(fields: [cartId], references: [id])
+  type CartLineItemType @relation(fields: [typeId], references: [id])
 }
 
 model Product {

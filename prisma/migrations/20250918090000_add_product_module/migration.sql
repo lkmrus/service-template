@@ -1,4 +1,4 @@
--- CreateTable
+-- Example product module migration (unchanged except for timestamp type)
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "title" TEXT NOT NULL,
@@ -14,8 +14,5 @@ CREATE TABLE "Product" (
     "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Product_sku_key" ON "Product"("sku");
+CREATE UNIQUE INDEX "Product_sku_key" ON "Product"("sku") WHERE "sku" IS NOT NULL;

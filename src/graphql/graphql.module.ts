@@ -22,6 +22,7 @@ import { OrdersResolver } from './resolvers/orders.resolver';
 import { BillingResolver } from './resolvers/billing.resolver';
 import { UsersResolver } from './resolvers/users.resolver';
 import { AuthResolver } from './resolvers/auth.resolver';
+import { CartResolver } from './resolvers/cart.resolver';
 import { JSONScalar } from './scalars/json.scalar';
 import { ProductsModule } from '../products/products.module';
 import { OrdersModule } from '../orders/orders.module';
@@ -29,6 +30,7 @@ import { BillingModule } from '../billing/billing.module';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { SuperAdminModule } from '../super-admin/super-admin.module';
+import { CartsModule } from '../carts/carts.module';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { SuperAdminGuard } from '../super-admin/super-admin.guard';
 import { SuperAdminOnlyGuard } from '../users/presentation/users/guards/super-admin-only.guard';
@@ -97,6 +99,7 @@ export class GraphqlModule {
         BillingModule,
         UsersModule,
         AuthModule,
+        CartsModule,
         GraphQLModule.forRootAsync({
           imports: [redisDynamicModule],
           driver: ApolloDriver,
@@ -198,6 +201,7 @@ export class GraphqlModule {
         BillingResolver,
         UsersResolver,
         AuthResolver,
+        CartResolver,
       ],
     };
   }

@@ -19,13 +19,8 @@ const cartLineItemsInclude =
     orderBy: [{ createdAt: 'asc' }],
     include: {
       type: true,
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: [{ createdAt: 'asc' }],
-        include: { type: true },
-      },
     },
-  });
+  } as const);
 
 const cartInclude = Prisma.validator<Prisma.CartInclude>()({
   lineItems: cartLineItemsInclude,
@@ -62,37 +57,15 @@ export class CartsService {
     return {
       id: item.id,
       cartId: item.cartId,
-      type: item.type,
       typeId: item.typeId,
-      parentLineItemId: item.parentLineItemId,
-      parentBundleId: item.parentBundleId,
-      orderStubId: item.orderStubId,
+      preOrderId: item.preOrderId,
       externalUuid: item.externalUuid,
       productSelectionParams: item.productSelectionParams,
       priceUSD: item.priceUSD ? Number(item.priceUSD) : null,
-      gracePeriod: item.gracePeriod,
       metadata: item.metadata,
       deletedAt: item.deletedAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      lineItems:
-        item.lineItems?.map((child) => ({
-          id: child.id,
-          cartId: child.cartId,
-          type: child.type,
-          typeId: child.typeId,
-          parentLineItemId: child.parentLineItemId,
-          parentBundleId: child.parentBundleId,
-          orderStubId: child.orderStubId,
-          externalUuid: child.externalUuid,
-          productSelectionParams: child.productSelectionParams,
-          priceUSD: child.priceUSD ? Number(child.priceUSD) : null,
-          gracePeriod: child.gracePeriod,
-          metadata: child.metadata,
-          deletedAt: child.deletedAt,
-          createdAt: child.createdAt,
-          updatedAt: child.updatedAt,
-        })) ?? [],
     };
   }
 
@@ -121,6 +94,14 @@ export class CartsService {
     return this.mapCart(cart);
   }
 
+  async findCartById(id: string) {
+    const cart = await this.prisma.cart.findUnique({
+      where: { id },
+      include: cartInclude,
+    });
+    return cart ? this.mapCart(cart) : null;
+  }
+
   async getCartByOwner(ownerId: string) {
     const cart = await this.prisma.cart.findFirst({
       where: { ownerId, deletedAt: null },
@@ -135,6 +116,15 @@ export class CartsService {
     return this.mapCart(cart);
   }
 
+  async findCartByOwner(ownerId: string) {
+    const cart = await this.prisma.cart.findFirst({
+      where: { ownerId, deletedAt: null },
+      include: cartInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+    return cart ? this.mapCart(cart) : null;
+  }
+
   async listCarts(): Promise<ReturnType<typeof this.mapCart>[]> {
     const carts = await this.prisma.cart.findMany({
       where: { deletedAt: null },
@@ -143,6 +133,18 @@ export class CartsService {
     });
 
     return carts.map((cart) => this.mapCart(cart));
+  }
+
+  async ensureCartForOwner(ownerId: string) {
+    const existing = await this.findCartByOwner(ownerId);
+    if (existing) {
+      return existing;
+    }
+    return this.createCart({ ownerId });
+  }
+
+  countItems(cart: { lineItems?: unknown[] }) {
+    return cart?.lineItems?.length ?? 0;
   }
 
   async updateCart(id: string, dto: UpdateCartDto) {
@@ -197,33 +199,17 @@ export class CartsService {
     const lineItem = await this.prisma.$transaction(async (tx) => {
       const type = await this.ensureLineItemType(dto.typeCode, tx);
 
-      if (dto.parentLineItemId || dto.parentBundleId) {
-        const parent = await tx.cartLineItem.findFirst({
-          where: {
-            id: dto.parentLineItemId ?? dto.parentBundleId,
-            deletedAt: null,
-          },
-        });
-
-        if (!parent) {
-          throw new BadRequestException('Parent line item does not exist');
-        }
-      }
-
       return tx.cartLineItem.create({
         data: {
           cartId,
           typeId: type.id,
-          orderStubId: dto.orderStubId ?? null,
+          preOrderId: dto.preOrderId ?? null,
           externalUuid: dto.externalUuid ?? null,
           productSelectionParams:
             dto.productSelectionParams === undefined
               ? undefined
               : (dto.productSelectionParams as Prisma.InputJsonValue),
           priceUSD: prismaDecimal,
-          gracePeriod: dto.gracePeriod ? new Date(dto.gracePeriod) : null,
-          parentLineItemId: dto.parentLineItemId ?? null,
-          parentBundleId: dto.parentBundleId ?? null,
           metadata:
             dto.metadata === undefined
               ? undefined
@@ -236,35 +222,14 @@ export class CartsService {
     return {
       id: lineItem.id,
       cartId: lineItem.cartId,
-      type: lineItem.type,
       typeId: lineItem.typeId,
-      parentLineItemId: lineItem.parentLineItemId,
-      parentBundleId: lineItem.parentBundleId,
-      orderStubId: lineItem.orderStubId,
+      preOrderId: lineItem.preOrderId,
       externalUuid: lineItem.externalUuid,
       productSelectionParams: lineItem.productSelectionParams,
       priceUSD: lineItem.priceUSD ? Number(lineItem.priceUSD) : null,
-      gracePeriod: lineItem.gracePeriod,
       metadata: lineItem.metadata,
       createdAt: lineItem.createdAt,
       updatedAt: lineItem.updatedAt,
-      lineItems: lineItem.lineItems.map((child) => ({
-        id: child.id,
-        cartId: child.cartId,
-        type: child.type,
-        typeId: child.typeId,
-        parentLineItemId: child.parentLineItemId,
-        parentBundleId: child.parentBundleId,
-        orderStubId: child.orderStubId,
-        externalUuid: child.externalUuid,
-        productSelectionParams: child.productSelectionParams,
-        priceUSD: child.priceUSD ? Number(child.priceUSD) : null,
-        gracePeriod: child.gracePeriod,
-        metadata: child.metadata,
-        deletedAt: child.deletedAt,
-        createdAt: child.createdAt,
-        updatedAt: child.updatedAt,
-      })),
     };
   }
 

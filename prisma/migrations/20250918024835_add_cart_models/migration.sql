@@ -1,4 +1,4 @@
--- CreateTable
+-- Create carts table
 CREATE TABLE "Cart" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "ownerId" TEXT,
@@ -12,36 +12,32 @@ CREATE TABLE "Cart" (
     CONSTRAINT "Cart_mergedToCartId_fkey" FOREIGN KEY ("mergedToCartId") REFERENCES "Cart" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- CreateTable
+-- Create cart line item types lookup
 CREATE TABLE "CartLineItemType" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "code" TEXT NOT NULL,
+    "code" TEXT NOT NULL UNIQUE,
     "description" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
--- CreateTable
+-- Create cart line items table
 CREATE TABLE "CartLineItem" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "cartId" TEXT,
     "typeId" TEXT NOT NULL,
-    "parentLineItemId" TEXT,
-    "parentBundleId" TEXT,
-    "orderStubId" TEXT,
+    "preOrderId" TEXT,
     "externalUuid" TEXT,
     "productSelectionParams" JSONB,
-    "priceUSD" DECIMAL,
-    "gracePeriod" TIMESTAMP(3),
+    "priceUSD" DOUBLE PRECISION,
     "metadata" JSONB,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "CartLineItem_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "CartLineItem_typeId_fkey" FOREIGN KEY ("typeId") REFERENCES "CartLineItemType" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "CartLineItem_parentLineItemId_fkey" FOREIGN KEY ("parentLineItemId") REFERENCES "CartLineItem" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "CartLineItem_parentBundleId_fkey" FOREIGN KEY ("parentBundleId") REFERENCES "CartLineItem" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "CartLineItem_typeId_fkey" FOREIGN KEY ("typeId") REFERENCES "CartLineItemType" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "CartLineItemType_code_key" ON "CartLineItemType"("code");
+CREATE INDEX "CartLineItem_cartId_idx" ON "CartLineItem"("cartId");
+CREATE INDEX "CartLineItem_typeId_idx" ON "CartLineItem"("typeId");
+CREATE UNIQUE INDEX "CartLineItem_externalUuid_idx" ON "CartLineItem"("externalUuid") WHERE "externalUuid" IS NOT NULL;

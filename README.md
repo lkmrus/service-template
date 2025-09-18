@@ -13,6 +13,8 @@ REST endpoints now have GraphQL counterparts exposed under `/gql`.
 - `products`: list all products.
 - `productById(id: String!)`: fetch a product by database id.
 - `productBySlug(slug: String!)`: fetch a product by slug.
+- `cart(filter?: CartFilterInput)`: fetch the active cart by id or owner (falls back to the authenticated user).
+- `cartItemsCount(filter?: CartFilterInput)`: return the number of line items (including nested bundle items) in the resolved cart.
 
 **Mutations**
 - `login(input: LoginInput!)`: exchange email/password for a JWT access token.
@@ -28,6 +30,44 @@ REST endpoints now have GraphQL counterparts exposed under `/gql`.
 - `rejectOrder(id: String!)`: same guard as `completeOrder`.
 - `createSubscription(input: CreateSubscriptionInput!)`: start a billing subscription.
 - `cancelSubscription(subscriptionId: String!)`: terminate an existing subscription.
+- `addCartLineItem(input: AddCartLineItemInput!)`: create a line item either by `productId` snapshot or a full `product` payload with a fixed `priceUSD`.
+- `removeCartLineItem(input: RemoveCartLineItemInput!)`: soft-delete a line item from the target cart.
+
+Supporting inputs:
+
+```graphql
+input CartFilterInput {
+  cartId: String
+  ownerId: String
+}
+
+input ProductSnapshotInput {
+  id: String!
+  priceUSD: Float!
+  metadata: JSON
+}
+
+input AddCartLineItemInput {
+  cartId: String
+  ownerId: String
+  typeCode: LineItemCode = REGULAR_ITEM
+  preOrderId: String
+  productId: String
+  product: ProductSnapshotInput
+  priceUSD: Float
+  productSelectionParams: JSON
+  metadata: JSON
+  externalUuid: String
+}
+
+input RemoveCartLineItemInput {
+  cartId: String
+  ownerId: String
+  lineItemId: String!
+}
+```
+
+`LineItemCode` mirrors the enum stored in `cart_line_item_types` (defaults to `regularItem`).
 
 ## Project setup
 

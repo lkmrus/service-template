@@ -1,25 +1,37 @@
-/*
-  Warnings:
+-- Redefine Balance to use userId as primary key
+ALTER TABLE "Balance" DROP CONSTRAINT IF EXISTS "Balance_pkey";
+ALTER TABLE "Balance" DROP COLUMN IF EXISTS "id";
+ALTER TABLE "Balance" ADD CONSTRAINT "Balance_pkey" PRIMARY KEY ("userId");
 
-  - The primary key for the `Balance` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Balance` table. All the data in the column will be lost.
-  - The primary key for the `Customer` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Customer` table. All the data in the column will be lost.
-  - The primary key for the `Invoice` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `invoiceKey` on the `Invoice` table. All the data in the column will be lost.
-  - The primary key for the `Payment` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Payment` table. All the data in the column will be lost.
-  - You are about to drop the column `paymentKey` on the `Payment` table. All the data in the column will be lost.
-  - The primary key for the `Plan` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Plan` table. All the data in the column will be lost.
-  - You are about to drop the column `planKey` on the `Plan` table. All the data in the column will be lost.
-  - The primary key for the `Subscription` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Subscription` table. All the data in the column will be lost.
-  - You are about to drop the column `subscriptionKey` on the `Subscription` table. All the data in the column will be lost.
-  - The required column `invoiceId` was added to the `Invoice` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
-  - The required column `paymentId` was added to the `Payment` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
-  - The required column `planId` was added to the `Plan` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
-  - The required column `subscriptionId` was added to the `Subscription` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
+-- Redefine Customer to use customerId as primary key
+ALTER TABLE "Customer" DROP CONSTRAINT IF EXISTS "Customer_pkey";
+ALTER TABLE "Customer" DROP COLUMN IF EXISTS "id";
+ALTER TABLE "Customer" ADD CONSTRAINT "Customer_pkey" PRIMARY KEY ("customerId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Customer_userId_key" ON "Customer"("userId");
 
-*/
+-- Plan id -> planId
+ALTER TABLE "Plan" DROP CONSTRAINT IF EXISTS "Plan_pkey";
+ALTER TABLE "Plan" RENAME COLUMN "id" TO "planId";
+ALTER TABLE "Plan" ADD CONSTRAINT "Plan_pkey" PRIMARY KEY ("planId");
+
+-- Subscription id -> subscriptionId
+ALTER TABLE "Subscription" DROP CONSTRAINT IF EXISTS "Subscription_pkey";
+ALTER TABLE "Subscription" RENAME COLUMN "id" TO "subscriptionId";
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_pkey" PRIMARY KEY ("subscriptionId");
+ALTER TABLE "Subscription" ALTER COLUMN "startDate" TYPE TIMESTAMP(3);
+ALTER TABLE "Subscription" ALTER COLUMN "endDate" TYPE TIMESTAMP(3);
+ALTER TABLE "Subscription" ALTER COLUMN "nextPaymentDate" TYPE TIMESTAMP(3);
+
+-- Invoice id -> invoiceId
+ALTER TABLE "Invoice" DROP CONSTRAINT IF EXISTS "Invoice_pkey";
+ALTER TABLE "Invoice" RENAME COLUMN "id" TO "invoiceId";
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_pkey" PRIMARY KEY ("invoiceId");
+ALTER TABLE "Invoice" ALTER COLUMN "amount" TYPE DOUBLE PRECISION;
+ALTER TABLE "Invoice" ALTER COLUMN "createdAt" TYPE TIMESTAMP(3);
+
+-- Payment id -> paymentId
+ALTER TABLE "Payment" DROP CONSTRAINT IF EXISTS "Payment_pkey";
+ALTER TABLE "Payment" RENAME COLUMN "id" TO "paymentId";
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_pkey" PRIMARY KEY ("paymentId");
+ALTER TABLE "Payment" ALTER COLUMN "amount" TYPE DOUBLE PRECISION;
+ALTER TABLE "Payment" ALTER COLUMN "createdAt" TYPE TIMESTAMP(3);

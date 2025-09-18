@@ -29,13 +29,10 @@ create table if not exists cart_line_items (
   id uuid primary key default gen_random_uuid(),
   cart_id uuid references carts(id) on delete set null,
   type_id uuid not null references cart_line_item_types(id) on delete restrict,
-  parent_line_item_id uuid references cart_line_items(id) on delete set null,
-  parent_bundle_id uuid references cart_line_items(id) on delete set null,
-  order_stub_id text,
+  pre_order_id uuid,
   external_uuid uuid,
   product_selection_params jsonb,
   price_usd numeric(18, 6),
-  grace_period timestamptz,
   metadata jsonb,
   deleted_at timestamptz,
   created_at timestamptz not null default now(),
@@ -47,5 +44,4 @@ create unique index if not exists cart_line_items_external_uuid_idx
 
 create index if not exists cart_line_items_cart_id_idx on cart_line_items(cart_id);
 create index if not exists cart_line_items_type_id_idx on cart_line_items(type_id);
-create index if not exists cart_line_items_parent_line_item_id_idx on cart_line_items(parent_line_item_id);
-create index if not exists cart_line_items_parent_bundle_id_idx on cart_line_items(parent_bundle_id);
+create index if not exists cart_line_items_pre_order_id_idx on cart_line_items(pre_order_id);
