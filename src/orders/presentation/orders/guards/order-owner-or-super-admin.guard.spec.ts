@@ -59,13 +59,14 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
   it('should return true if user is super admin', async () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(true);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({
           user: { id: 'super-admin-uuid' },
           params: { id: 'order123' },
         }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(true);
   });
 
@@ -73,13 +74,14 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(false);
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(mockOrder);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({
           user: { id: 'user123' },
           params: { id: 'order123' },
         }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(true);
   });
 
@@ -87,13 +89,14 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(false);
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(mockOrder);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({
           user: { id: 'another-user-uuid' },
           params: { id: 'order123' },
         }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(false);
   });
 
@@ -101,22 +104,24 @@ describe('OrderOwnerOrSuperAdminGuard', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(false);
     jest.spyOn(ordersService, 'findOne').mockResolvedValue(undefined);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({
           user: { id: 'user123' },
           params: { id: 'nonexistent-order' },
         }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(false);
   });
 
   it('should return false if user is undefined', async () => {
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({ params: { id: 'order123' } }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     await expect(guard.canActivate(context)).resolves.toBe(false);
   });
 });

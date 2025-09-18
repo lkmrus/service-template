@@ -20,29 +20,32 @@ describe('SuperAdminOnlyGuard', () => {
   it('should return true if user is super admin', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(true);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({ user: { id: 'super-admin-uuid' } }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     expect(guard.canActivate(context)).toBe(true);
   });
 
   it('should return false if user is not super admin', () => {
     jest.spyOn(superAdminService, 'isSuperAdmin').mockReturnValue(false);
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({ user: { id: 'regular-user-uuid' } }),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     expect(guard.canActivate(context)).toBe(false);
   });
 
   it('should return false if user is undefined', () => {
     const context = {
+      getType: jest.fn().mockReturnValue('http'),
       switchToHttp: () => ({
         getRequest: () => ({}),
       }),
-    } as ExecutionContext;
+    } as unknown as ExecutionContext;
     expect(guard.canActivate(context)).toBe(false);
   });
 });
