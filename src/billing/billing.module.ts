@@ -149,5 +149,6 @@ import { AppConfig } from '../config/config';
       ],
     },
   ],
+  exports: [CreateSubscriptionUseCase, CancelSubscriptionUseCase],
 })
 export class BillingModule {}

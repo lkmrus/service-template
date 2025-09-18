@@ -61,6 +61,6 @@ import { AppConfig } from '../config/config';
     },
   ],
   controllers: [OrdersController],
-  exports: [OrdersService],
+  exports: [OrdersService, PreOrderService, OrderOwnerOrSuperAdminGuard],
 })
 export class OrdersModule {}

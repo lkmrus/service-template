@@ -17,6 +17,22 @@ import { RedisModule } from '../redis/redis.module';
 import { REDIS_PUB_SUB_CLIENT } from '../redis/redis.constants';
 import { AppConfig } from '../config/config';
 import { GraphqlResolver } from './graphql.resolver';
+import { ProductsResolver } from './resolvers/products.resolver';
+import { OrdersResolver } from './resolvers/orders.resolver';
+import { BillingResolver } from './resolvers/billing.resolver';
+import { UsersResolver } from './resolvers/users.resolver';
+import { AuthResolver } from './resolvers/auth.resolver';
+import { JSONScalar } from './scalars/json.scalar';
+import { ProductsModule } from '../products/products.module';
+import { OrdersModule } from '../orders/orders.module';
+import { BillingModule } from '../billing/billing.module';
+import { UsersModule } from '../users/users.module';
+import { AuthModule } from '../auth/auth.module';
+import { SuperAdminModule } from '../super-admin/super-admin.module';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
+import { SuperAdminGuard } from '../super-admin/super-admin.guard';
+import { SuperAdminOnlyGuard } from '../users/presentation/users/guards/super-admin-only.guard';
+import { OrderOwnerOrSuperAdminGuard } from '../orders/presentation/orders/guards/order-owner-or-super-admin.guard';
 
 type RedisCommandable = {
   get(key: string): Promise<string | null>;
@@ -75,6 +91,12 @@ export class GraphqlModule {
       module: GraphqlModule,
       imports: [
         redisDynamicModule,
+        SuperAdminModule,
+        ProductsModule,
+        OrdersModule,
+        BillingModule,
+        UsersModule,
+        AuthModule,
         GraphQLModule.forRootAsync({
           imports: [redisDynamicModule],
           driver: ApolloDriver,
@@ -163,7 +185,20 @@ export class GraphqlModule {
           inject: [ConfigService, REDIS_PUB_SUB_CLIENT],
         }),
       ],
-      providers: [SentryLoggerApolloPlugin, GraphqlResolver],
+      providers: [
+        SentryLoggerApolloPlugin,
+        GraphqlResolver,
+        JSONScalar,
+        GqlAuthGuard,
+        SuperAdminGuard,
+        SuperAdminOnlyGuard,
+        OrderOwnerOrSuperAdminGuard,
+        ProductsResolver,
+        OrdersResolver,
+        BillingResolver,
+        UsersResolver,
+        AuthResolver,
+      ],
     };
   }
 }
