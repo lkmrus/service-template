@@ -7,7 +7,6 @@ generator client {
 //   url      = "file:./dev.db"
 // }
 
-// postgresql
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -186,20 +185,9 @@ model Cart {
   lineItems      CartLineItem[]
 }
 
-model CartLineItemType {
-  id          String   @id @default(uuid())
-  code        String   @unique
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  lineItems CartLineItem[]
-}
-
 model CartLineItem {
   id                     String    @id @default(uuid())
   cartId                 String?
-  typeId                 String
   preOrderId             String?
   externalUuid           String?
   productSelectionParams Json?
@@ -209,8 +197,7 @@ model CartLineItem {
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
-  cart Cart?            @relation(fields: [cartId], references: [id])
-  type CartLineItemType @relation(fields: [typeId], references: [id])
+  cart Cart? @relation(fields: [cartId], references: [id])
 }
 
 model Product {

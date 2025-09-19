@@ -1,11 +1,4 @@
-import {
-  Args,
-  Context,
-  Int,
-  Mutation,
-  Query,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { CartModel } from '../models/cart.model';
 import { CartLineItemModel } from '../models/cart-line-item.model';
@@ -17,7 +10,6 @@ import {
 import { CartsService } from '../../carts/carts.service';
 import { GqlAuthGuard } from '../../auth/guards/gql-auth.guard';
 import { GraphqlContext } from '../graphql.interface';
-import { LineItemCode } from '../../carts/enums/line-item-code.enum';
 
 @Resolver(() => CartModel)
 export class CartResolver {
@@ -105,11 +97,15 @@ export class CartResolver {
     }
 
     if (ownerId && cart.ownerId !== ownerId) {
-      throw new BadRequestException('Cart does not belong to the specified owner');
+      throw new BadRequestException(
+        'Cart does not belong to the specified owner',
+      );
     }
 
     if (!input.productId && !input.product) {
-      throw new BadRequestException('productId or product snapshot is required');
+      throw new BadRequestException(
+        'productId or product snapshot is required',
+      );
     }
 
     const priceUSD = input.priceUSD ?? input.product?.priceUSD ?? null;
@@ -122,17 +118,18 @@ export class CartResolver {
     } as Record<string, unknown>;
 
     if (input.productId || input.product?.id) {
-      productSelectionParamsBase.productId = input.productId ?? input.product?.id;
+      productSelectionParamsBase.productId =
+        input.productId ?? input.product?.id;
     }
 
-    const productSelectionParams = Object.keys(productSelectionParamsBase).length
+    const productSelectionParams = Object.keys(productSelectionParamsBase)
+      .length
       ? productSelectionParamsBase
       : undefined;
 
     const metadata = input.metadata ?? input.product?.metadata ?? undefined;
 
     return this.cartsService.addLineItem(cart.id, {
-      typeCode: input.typeCode ?? LineItemCode.REGULAR_ITEM,
       preOrderId: input.preOrderId,
       externalUuid: input.externalUuid,
       priceUSD,

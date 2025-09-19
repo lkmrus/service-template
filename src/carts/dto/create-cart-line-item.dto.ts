@@ -1,5 +1,4 @@
 import {
-  IsEnum,
   IsNumber,
   IsObject,
   IsOptional,
@@ -7,12 +6,8 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { LineItemCode } from '../enums/line-item-code.enum';
 
 export class CreateCartLineItemDto {
-  @IsEnum(LineItemCode)
-  typeCode: LineItemCode;
-
   @IsOptional()
   @IsUUID()
   preOrderId?: string;

@@ -50,7 +50,6 @@ input ProductSnapshotInput {
 input AddCartLineItemInput {
   cartId: String
   ownerId: String
-  typeCode: LineItemCode = REGULAR_ITEM
   preOrderId: String
   productId: String
   product: ProductSnapshotInput
@@ -66,8 +65,6 @@ input RemoveCartLineItemInput {
   lineItemId: String!
 }
 ```
-
-`LineItemCode` mirrors the enum stored in `cart_line_item_types` (defaults to `regularItem`).
 
 ## Project setup
 

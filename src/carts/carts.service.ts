@@ -1,38 +1,23 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { CreateCartLineItemDto } from './dto/create-cart-line-item.dto';
-import {
-  LINE_ITEM_TYPE_DESCRIPTIONS,
-  LineItemCode,
-} from './enums/line-item-code.enum';
+const cartLineItemsArgs = {
+  where: { deletedAt: null },
+  orderBy: [{ createdAt: 'asc' } as const],
+} satisfies Prisma.CartLineItemFindManyArgs;
 
-const cartLineItemsInclude =
-  Prisma.validator<Prisma.CartLineItemFindManyArgs>()({
-    where: { deletedAt: null },
-    orderBy: [{ createdAt: 'asc' }],
-    include: {
-      type: true,
-    },
-  } as const);
-
-const cartInclude = Prisma.validator<Prisma.CartInclude>()({
-  lineItems: cartLineItemsInclude,
-});
+const cartInclude = {
+  lineItems: cartLineItemsArgs,
+} satisfies Prisma.CartInclude;
 
 type CartWithRelations = Prisma.CartGetPayload<{
   include: typeof cartInclude;
 }>;
 
-type CartLineItemWithRelations = Prisma.CartLineItemGetPayload<{
-  include: (typeof cartLineItemsInclude)['include'];
-}>;
+type CartLineItemEntity = CartWithRelations['lineItems'][number];
 
 @Injectable()
 export class CartsService {
@@ -44,7 +29,7 @@ export class CartsService {
       ownerId: cart.ownerId,
       authorId: cart.authorId,
       couponCode: cart.couponCode,
-      metadata: cart.metadata,
+      metadata: (cart.metadata ?? undefined) as unknown,
       mergedToCartId: cart.mergedToCartId,
       deletedAt: cart.deletedAt,
       createdAt: cart.createdAt,
@@ -53,16 +38,16 @@ export class CartsService {
     };
   }
 
-  private mapLineItem(item: CartLineItemWithRelations) {
+  private mapLineItem(item: CartLineItemEntity) {
     return {
       id: item.id,
       cartId: item.cartId,
-      typeId: item.typeId,
       preOrderId: item.preOrderId,
       externalUuid: item.externalUuid,
-      productSelectionParams: item.productSelectionParams,
+      productSelectionParams: (item.productSelectionParams ??
+        undefined) as unknown,
       priceUSD: item.priceUSD ? Number(item.priceUSD) : null,
-      metadata: item.metadata,
+      metadata: (item.metadata ?? undefined) as unknown,
       deletedAt: item.deletedAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
@@ -168,20 +153,6 @@ export class CartsService {
     });
   }
 
-  private async ensureLineItemType(
-    code: LineItemCode,
-    tx: Prisma.TransactionClient | PrismaService = this.prisma,
-  ) {
-    return tx.cartLineItemType.upsert({
-      where: { code },
-      create: {
-        code,
-        description: LINE_ITEM_TYPE_DESCRIPTIONS[code],
-      },
-      update: {},
-    });
-  }
-
   async addLineItem(cartId: string, dto: CreateCartLineItemDto) {
     const cart = await this.prisma.cart.findUnique({
       where: { id: cartId, deletedAt: null },
@@ -196,38 +167,32 @@ export class CartsService {
         ? new Prisma.Decimal(dto.priceUSD)
         : null;
 
-    const lineItem = await this.prisma.$transaction(async (tx) => {
-      const type = await this.ensureLineItemType(dto.typeCode, tx);
-
-      return tx.cartLineItem.create({
-        data: {
-          cartId,
-          typeId: type.id,
-          preOrderId: dto.preOrderId ?? null,
-          externalUuid: dto.externalUuid ?? null,
-          productSelectionParams:
-            dto.productSelectionParams === undefined
-              ? undefined
-              : (dto.productSelectionParams as Prisma.InputJsonValue),
-          priceUSD: prismaDecimal,
-          metadata:
-            dto.metadata === undefined
-              ? undefined
-              : (dto.metadata as Prisma.InputJsonValue),
-        },
-        include: cartLineItemsInclude.include,
-      });
+    const lineItem = await this.prisma.cartLineItem.create({
+      data: {
+        cartId,
+        preOrderId: dto.preOrderId ?? null,
+        externalUuid: dto.externalUuid ?? null,
+        productSelectionParams:
+          dto.productSelectionParams === undefined
+            ? undefined
+            : (dto.productSelectionParams as Prisma.InputJsonValue),
+        priceUSD: prismaDecimal,
+        metadata:
+          dto.metadata === undefined
+            ? undefined
+            : (dto.metadata as Prisma.InputJsonValue),
+      },
     });
 
     return {
       id: lineItem.id,
       cartId: lineItem.cartId,
-      typeId: lineItem.typeId,
       preOrderId: lineItem.preOrderId,
       externalUuid: lineItem.externalUuid,
-      productSelectionParams: lineItem.productSelectionParams,
+      productSelectionParams: (lineItem.productSelectionParams ??
+        undefined) as unknown,
       priceUSD: lineItem.priceUSD ? Number(lineItem.priceUSD) : null,
-      metadata: lineItem.metadata,
+      metadata: (lineItem.metadata ?? undefined) as unknown,
       createdAt: lineItem.createdAt,
       updatedAt: lineItem.updatedAt,
     };

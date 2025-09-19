@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { LineItemCode, LINE_ITEM_TYPE_DESCRIPTIONS } from '../src/carts/enums/line-item-code.enum';
 
 const prisma = new PrismaClient();
 
@@ -66,25 +65,9 @@ async function seedUsersAndCustomers() {
   });
 }
 
-async function seedCartLineItemTypes() {
-  const entries = Object.values(LineItemCode).map((code) => ({
-    code,
-    description: LINE_ITEM_TYPE_DESCRIPTIONS[code],
-  }));
-
-  for (const entry of entries) {
-    await prisma.cartLineItemType.upsert({
-      where: { code: entry.code },
-      update: entry,
-      create: entry,
-    });
-  }
-}
-
 async function main() {
   await seedPlans();
   await seedUsersAndCustomers();
-  await seedCartLineItemTypes();
 }
 
 main()

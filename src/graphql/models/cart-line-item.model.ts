@@ -13,14 +13,11 @@ export class CartLineItemModel {
   @Field({ nullable: true })
   preOrderId?: string | null;
 
-  @Field()
-  typeId: string;
-
   @Field({ nullable: true })
   externalUuid?: string | null;
 
   @Field(() => JSONScalar, { nullable: true })
-  productSelectionParams?: string;
+  productSelectionParams?: unknown;
 
   @Field({ nullable: true })
   priceUSD?: number | null;

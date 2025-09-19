@@ -1,11 +1,5 @@
 import { Field, Float, InputType } from '@nestjs/graphql';
-import { registerEnumType } from '@nestjs/graphql';
-import { LineItemCode } from '../../carts/enums/line-item-code.enum';
 import { JSONScalar } from '../scalars/json.scalar';
-
-registerEnumType(LineItemCode, {
-  name: 'LineItemCode',
-});
 
 @InputType()
 export class CartFilterInput {
@@ -35,9 +29,6 @@ export class AddCartLineItemInput {
 
   @Field({ nullable: true })
   ownerId?: string;
-
-  @Field(() => LineItemCode, { nullable: true, defaultValue: LineItemCode.REGULAR_ITEM })
-  typeCode?: LineItemCode;
 
   @Field({ nullable: true })
   preOrderId?: string;
