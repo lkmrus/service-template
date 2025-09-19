@@ -13,6 +13,9 @@ REST endpoints now have GraphQL counterparts exposed under `/gql`.
 - `products`: list all products.
 - `productById(id: String!)`: fetch a product by database id.
 - `productBySlug(slug: String!)`: fetch a product by slug.
+- `reviews`: list all reviews.
+- `reviewsByProduct(productId: String!)`: list reviews for a product.
+- `reviewById(id: String!)`: fetch a review by id.
 - `cart(filter?: CartFilterInput)`: fetch the active cart by id or owner (falls back to the authenticated user).
 - `cartItemsCount(filter?: CartFilterInput)`: return the number of line items (including nested bundle items) in the resolved cart.
 
@@ -25,6 +28,9 @@ REST endpoints now have GraphQL counterparts exposed under `/gql`.
 - `createProduct(input: CreateProductInput!)`: super-admin only.
 - `updateProduct(id: String!, input: UpdateProductInput!)`: super-admin only.
 - `deleteProduct(id: String!)`: super-admin only.
+- `createReview(input: CreateReviewInput!)`: super-admin only.
+- `updateReview(id: String!, input: UpdateReviewInput!)`: super-admin only.
+- `deleteReview(id: String!)`: super-admin only.
 - `createPreOrder(input: CreatePreOrderInput!)`: mirror of the pre-order REST flow.
 - `completeOrder(id: String!)`: JWT protected; user must own the order or be super-admin.
 - `rejectOrder(id: String!)`: same guard as `completeOrder`.
@@ -63,6 +69,26 @@ input RemoveCartLineItemInput {
   cartId: String
   ownerId: String
   lineItemId: String!
+}
+
+input CreateReviewInput {
+  productId: String!
+  userId: String!
+  review: String!
+  orderId: String
+  rate: Int!
+  lang: String!
+  date: DateTime
+}
+
+input UpdateReviewInput {
+  productId: String
+  userId: String
+  review: String
+  orderId: String
+  rate: Int
+  lang: String
+  date: DateTime
 }
 ```
 

@@ -20,6 +20,7 @@ import { PinoLoggerModule } from './pino-logger/pino-logger.module';
 import { CronSchedulerModule } from './cron-scheduler/cron-scheduler.module';
 import { SharedRabbitMQModule } from './shared-rabbitmq/shared-rabbitmq.module';
 import { CartsModule } from './carts/carts.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { CartsModule } from './carts/carts.module';
     CronSchedulerModule,
     SharedRabbitMQModule.register(),
     CartsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

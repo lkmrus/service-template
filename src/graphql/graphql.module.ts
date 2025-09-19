@@ -18,6 +18,7 @@ import { REDIS_PUB_SUB_CLIENT } from '../redis/redis.constants';
 import { AppConfig } from '../config/config';
 import { GraphqlResolver } from './graphql.resolver';
 import { ProductsResolver } from './resolvers/products.resolver';
+import { ReviewsResolver } from './resolvers/reviews.resolver';
 import { OrdersResolver } from './resolvers/orders.resolver';
 import { BillingResolver } from './resolvers/billing.resolver';
 import { UsersResolver } from './resolvers/users.resolver';
@@ -25,6 +26,7 @@ import { AuthResolver } from './resolvers/auth.resolver';
 import { CartResolver } from './resolvers/cart.resolver';
 import { JSONScalar } from './scalars/json.scalar';
 import { ProductsModule } from '../products/products.module';
+import { ReviewsModule } from '../reviews/reviews.module';
 import { OrdersModule } from '../orders/orders.module';
 import { BillingModule } from '../billing/billing.module';
 import { UsersModule } from '../users/users.module';
@@ -95,6 +97,7 @@ export class GraphqlModule {
         redisDynamicModule,
         SuperAdminModule,
         ProductsModule,
+        ReviewsModule,
         OrdersModule,
         BillingModule,
         UsersModule,
@@ -197,6 +200,7 @@ export class GraphqlModule {
         SuperAdminOnlyGuard,
         OrderOwnerOrSuperAdminGuard,
         ProductsResolver,
+        ReviewsResolver,
         OrdersResolver,
         BillingResolver,
         UsersResolver,

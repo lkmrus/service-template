@@ -59,6 +59,7 @@ model User {
   transactions Transaction[]
   customer     Customer?
   balance      Balance?
+  reviews      Review[]
 }
 
 model PreOrder {
@@ -95,6 +96,7 @@ model Order {
   user                  User         @relation(fields: [userId], references: [id])
   preOrder              PreOrder?    @relation(fields: [preOrderId], references: [id])
   transaction           Transaction? @relation(fields: [transactionId], references: [id])
+  reviews               Review[]
 }
 
 model Transaction {
@@ -213,4 +215,26 @@ model Product {
   metadata    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  reviews     Review[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  userId    String
+  review    String
+  orderId   String?
+  rate      Int
+  lang      String
+  date      DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  @@index([productId], map: "Review_productId_idx")
+  @@index([userId], map: "Review_userId_idx")
+  @@index([orderId], map: "Review_orderId_idx")
 }
