@@ -141,6 +141,10 @@ Repositories can operate against Prisma or Supabase. By default the application 
 
 Environment variables are centralised in `src/config/config.ts` with Joi validation. Update that file if you introduce new configuration keys so they are typed and validated automatically.
 
+### Billing configuration
+
+Billing transactions require a service account identifier that is propagated to the transactions service. Configure it through the `BILLING_SERVICE_ACCOUNT_ID` environment variable (defaults to `service_account_123`).
+
 ### Redis configuration
 
 Pub/sub and GraphQL caching rely on Redis. Configure the connection with the following environment variables (defaults are shown):
