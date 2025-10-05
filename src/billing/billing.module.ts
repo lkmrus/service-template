@@ -3,6 +3,10 @@ import { BillingController } from './presentation/billing/billing.controller';
 import { StripeAdapter } from './infrastructure/payment/stripe.adapter';
 import { PAYMENT_GATEWAY_TOKEN } from './infrastructure/payment/payment-gateway.interface';
 import { UserCreatedListener } from './application/listeners/user-created.listener';
+import {
+  BILLING_SERVICE_ACCOUNT_ID_TOKEN,
+  CreateSubscriptionUseCase,
+} from './application/use-cases/create-subscription.use-case';
 import { TransactionCompletedBalanceListener } from './application/listeners/transaction-completed-balance.listener';
 import { CreateSubscriptionUseCase } from './application/use-cases/create-subscription.use-case';
 import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
@@ -37,6 +41,12 @@ import { AppConfig } from '../config/config';
       useClass: StripeAdapter,
     },
     UserCreatedListener,
+    {
+      provide: BILLING_SERVICE_ACCOUNT_ID_TOKEN,
+      useFactory: (config: ConfigService<AppConfig>) =>
+        config.get<string>('billingServiceAccountId') ?? 'service_account_123',
+      inject: [ConfigService],
+    },
     TransactionCompletedBalanceListener,
     CreateSubscriptionUseCase,
     CancelSubscriptionUseCase,

@@ -23,6 +23,10 @@ import {
 } from '../../domain/repositories/subscription.repository';
 import { SubscriptionStatusChangedEvent } from '../../domain/events/subscription-status-changed.event';
 
+export const BILLING_SERVICE_ACCOUNT_ID_TOKEN = Symbol(
+  'BILLING_SERVICE_ACCOUNT_ID_TOKEN',
+);
+
 @Injectable()
 export class CreateSubscriptionUseCase {
   constructor(
@@ -36,6 +40,8 @@ export class CreateSubscriptionUseCase {
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly transactionsService: TransactionsService,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(BILLING_SERVICE_ACCOUNT_ID_TOKEN)
+    private readonly serviceAccountId: string,
   ) {}
 
   /**
@@ -76,7 +82,7 @@ export class CreateSubscriptionUseCase {
 
     const transaction = await this.transactionsService.createTransaction({
       userId,
-      serviceAccountId: 'service_account_123',
+      serviceAccountId: this.serviceAccountId,
       amountOut: plan.price,
       currency: plan.currency,
       status: TransactionStatus.COMPLETED,
