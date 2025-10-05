@@ -7,6 +7,8 @@ import {
   BILLING_SERVICE_ACCOUNT_ID_TOKEN,
   CreateSubscriptionUseCase,
 } from './application/use-cases/create-subscription.use-case';
+import { TransactionCompletedBalanceListener } from './application/listeners/transaction-completed-balance.listener';
+import { CreateSubscriptionUseCase } from './application/use-cases/create-subscription.use-case';
 import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { CUSTOMER_REPOSITORY } from './domain/repositories/customer.repository';
@@ -45,6 +47,7 @@ import { AppConfig } from '../config/config';
         config.get<string>('billingServiceAccountId') ?? 'service_account_123',
       inject: [ConfigService],
     },
+    TransactionCompletedBalanceListener,
     CreateSubscriptionUseCase,
     CancelSubscriptionUseCase,
     PrismaCustomerRepository,
