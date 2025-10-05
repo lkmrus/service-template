@@ -141,6 +141,15 @@ Repositories can operate against Prisma or Supabase. By default the application 
 
 Environment variables are centralised in `src/config/config.ts` with Joi validation. Update that file if you introduce new configuration keys so they are typed and validated automatically.
 
+### Stripe configuration
+
+Provide the following environment variables to enable Stripe integrations:
+
+| Variable                 | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `STRIPE_API_KEY`         | Secret key used for outbound Stripe requests |
+| `STRIPE_WEBHOOK_SECRET`  | Signing secret for validating webhook calls  |
+
 ### Redis configuration
 
 Pub/sub and GraphQL caching rely on Redis. Configure the connection with the following environment variables (defaults are shown):
