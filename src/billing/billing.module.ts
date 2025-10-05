@@ -3,6 +3,7 @@ import { BillingController } from './presentation/billing/billing.controller';
 import { StripeAdapter } from './infrastructure/payment/stripe.adapter';
 import { PAYMENT_GATEWAY_TOKEN } from './infrastructure/payment/payment-gateway.interface';
 import { UserCreatedListener } from './application/listeners/user-created.listener';
+import { TransactionCompletedBalanceListener } from './application/listeners/transaction-completed-balance.listener';
 import { CreateSubscriptionUseCase } from './application/use-cases/create-subscription.use-case';
 import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
 import { TransactionsModule } from '../transactions/transactions.module';
@@ -36,6 +37,7 @@ import { AppConfig } from '../config/config';
       useClass: StripeAdapter,
     },
     UserCreatedListener,
+    TransactionCompletedBalanceListener,
     CreateSubscriptionUseCase,
     CancelSubscriptionUseCase,
     PrismaCustomerRepository,
