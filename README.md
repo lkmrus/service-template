@@ -141,6 +141,14 @@ Repositories can operate against Prisma or Supabase. By default the application 
 
 Environment variables are centralised in `src/config/config.ts` with Joi validation. Update that file if you introduce new configuration keys so they are typed and validated automatically.
 
+### Stripe configuration
+
+Provide the following environment variables to enable Stripe integrations:
+
+| Variable                 | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `STRIPE_API_KEY`         | Secret key used for outbound Stripe requests |
+| `STRIPE_WEBHOOK_SECRET`  | Signing secret for validating webhook calls  |
 ### Billing configuration
 
 Billing transactions require a service account identifier that is propagated to the transactions service. Configure it through the `BILLING_SERVICE_ACCOUNT_ID` environment variable (defaults to `service_account_123`).

@@ -10,6 +10,7 @@ export const configValidationSchema = Joi.object({
   SUPABASE_SERVICE_ROLE_KEY: Joi.string().optional(),
   DATA_PROVIDER: Joi.string().valid('supabase', 'prisma').default('supabase'),
   STRIPE_API_KEY: Joi.string().optional(),
+  STRIPE_WEBHOOK_SECRET: Joi.string().optional(),
   BILLING_SERVICE_ACCOUNT_ID: Joi.string().optional(),
   REDIS_HOST: Joi.string().hostname().default('localhost'),
   REDIS_PORT: Joi.number().port().default(6379),
@@ -33,6 +34,7 @@ export interface AppConfig {
   supabaseServiceRoleKey?: string;
   dataProvider: DataProvider;
   stripeApiKey?: string;
+  stripeWebhookSecret?: string;
   billingServiceAccountId?: string;
   gql: GQLConfig;
   redis: RedisConfig;
@@ -47,6 +49,7 @@ export const appConfig = (): AppConfig => ({
     process.env.DATA_PROVIDER ?? 'supabase'
   ).toLowerCase() as DataProvider,
   stripeApiKey: process.env.STRIPE_API_KEY,
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   billingServiceAccountId: process.env.BILLING_SERVICE_ACCOUNT_ID,
   gql: {
     persistedQueriesTTL: +(process.env.PERSISTED_QUERIES_TTL ?? '86400'),

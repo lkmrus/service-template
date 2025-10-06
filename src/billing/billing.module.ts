@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BillingController } from './presentation/billing/billing.controller';
 import { StripeAdapter } from './infrastructure/payment/stripe.adapter';
+import { StripeWebhookService } from './infrastructure/payment/stripe-webhook.service';
 import { PAYMENT_GATEWAY_TOKEN } from './infrastructure/payment/payment-gateway.interface';
 import { UserCreatedListener } from './application/listeners/user-created.listener';
 import {
@@ -10,6 +11,8 @@ import {
 import { TransactionCompletedBalanceListener } from './application/listeners/transaction-completed-balance.listener';
 import { CreateSubscriptionUseCase } from './application/use-cases/create-subscription.use-case';
 import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
+import { HandleInvoicePaymentSucceededUseCase } from './application/use-cases/handle-invoice-payment-succeeded.use-case';
+import { HandleCustomerSubscriptionUpdatedUseCase } from './application/use-cases/handle-customer-subscription-updated.use-case';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { CUSTOMER_REPOSITORY } from './domain/repositories/customer.repository';
 import { PLAN_REPOSITORY } from './domain/repositories/plan.repository';
@@ -36,10 +39,12 @@ import { AppConfig } from '../config/config';
   imports: [TransactionsModule],
   controllers: [BillingController],
   providers: [
+    StripeAdapter,
     {
       provide: PAYMENT_GATEWAY_TOKEN,
-      useClass: StripeAdapter,
+      useExisting: StripeAdapter,
     },
+    StripeWebhookService,
     UserCreatedListener,
     {
       provide: BILLING_SERVICE_ACCOUNT_ID_TOKEN,
@@ -50,6 +55,8 @@ import { AppConfig } from '../config/config';
     TransactionCompletedBalanceListener,
     CreateSubscriptionUseCase,
     CancelSubscriptionUseCase,
+    HandleInvoicePaymentSucceededUseCase,
+    HandleCustomerSubscriptionUpdatedUseCase,
     PrismaCustomerRepository,
     SupabaseCustomerRepository,
     PrismaPlanRepository,
