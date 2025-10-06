@@ -149,6 +149,9 @@ Provide the following environment variables to enable Stripe integrations:
 | ------------------------ | -------------------------------------------- |
 | `STRIPE_API_KEY`         | Secret key used for outbound Stripe requests |
 | `STRIPE_WEBHOOK_SECRET`  | Signing secret for validating webhook calls  |
+### Billing configuration
+
+Billing transactions require a service account identifier that is propagated to the transactions service. Configure it through the `BILLING_SERVICE_ACCOUNT_ID` environment variable (defaults to `service_account_123`).
 
 ### Redis configuration
 
